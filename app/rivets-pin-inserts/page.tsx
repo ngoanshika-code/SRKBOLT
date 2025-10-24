@@ -1,0 +1,290 @@
+"use client"
+
+import Layout from "@/components/Layout"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, ExternalLink, Zap, Settings, Factory } from "lucide-react"
+
+export default function RivetsPinInsertsPage() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+  
+  const slides = [
+    {
+      id: 1,
+      image: "https://t3.ftcdn.net/jpg/02/33/71/82/240_F_233718247_GoQZJTzziQ1Qp2S30kv8hac3pVzMs74y.jpg",
+      title: "Rivets & Pins",
+      subtitle: "Permanent Fastening Solutions"
+    },
+    {
+      id: 2,
+      image: "https://t3.ftcdn.net/jpg/07/06/47/84/240_F_706478455_hSFXNArvKUkM3fWMmr91O71fvyqJTzmb.jpg",
+      title: "Threaded Inserts",
+      subtitle: "Thread Reinforcement"
+    },
+    {
+      id: 3,
+      image: "https://t4.ftcdn.net/jpg/04/87/17/99/240_F_487179985_vWWNxyr0facawhl0G4F9ir8mjmfK64lU.jpg",
+      title: "Specialized Fasteners",
+      subtitle: "Precision Engineering"
+    }
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [slides.length])
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+  }
+
+  // Rivets, Pin & Inserts product data
+  const rivetsProducts = [
+    {
+      id: 1,
+      name: "Pop Rivets",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Blind rivets for sheet metal applications",
+      price: "₹2.50",
+      category: "RIVETS",
+      inStock: true
+    },
+    {
+      id: 2,
+      name: "Solid Rivets",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Solid rivets for heavy-duty applications",
+      price: "₹8.75",
+      category: "RIVETS",
+      inStock: true
+    },
+    {
+      id: 3,
+      name: "Threaded Inserts",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Threaded inserts for plastic and soft materials",
+      price: "₹15.20",
+      category: "RIVETS",
+      inStock: true
+    },
+    {
+      id: 4,
+      name: "Cotter Pins",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Cotter pins for securing bolts and shafts",
+      price: "₹3.80",
+      category: "RIVETS",
+      inStock: true
+    },
+    {
+      id: 5,
+      name: "Split Pins",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Split pins for locking mechanisms",
+      price: "₹4.90",
+      category: "RIVETS",
+      inStock: true
+    },
+    {
+      id: 6,
+      name: "Roll Pins",
+      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
+      description: "Spring roll pins for alignment and retention",
+      price: "₹6.60",
+      category: "RIVETS",
+      inStock: true
+    }
+  ]
+
+  return (
+    <Layout>
+      {/* Hero Section - Image Slider */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Slides */}
+        <div 
+          className="flex transition-transform duration-500 ease-in-out h-full"
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
+          {slides.map((slide, index) => (
+            <div key={slide.id} className="w-full shrink-0 h-full relative">
+              <img
+                src={slide.image}
+                alt="SRK Bolt Rivets & Pins"
+                className="w-full h-full object-cover"
+              />
+              {/* Dark overlay for better contrast */}
+              <div className="absolute inset-0 bg-black/50"></div>
+              
+              {/* Title overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <h2 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">
+                    {slide.title}
+                  </h2>
+                  <p className="text-xl md:text-2xl drop-shadow-lg">
+                    {slide.subtitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation Buttons */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 z-10"
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 z-10"
+        >
+          <ChevronRight className="w-8 h-8" />
+        </button>
+        
+        {/* Slide Indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-10">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                index === currentSlide ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Rivets, Pin & Inserts Content */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">Rivets, Pin & Inserts</h1>
+            <p className="text-gray-600 text-xl max-w-4xl mx-auto leading-relaxed">
+              Explore our comprehensive range of rivets, pins, and threaded inserts designed for permanent 
+              and semi-permanent fastening applications. From pop rivets to threaded inserts, we provide 
+              specialized fastening solutions for various materials and applications.
+            </p>
+          </div>
+          
+          {/* Product Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {rivetsProducts.map((product) => (
+              <div key={product.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-2xl font-bold mb-1">{product.name}</h3>
+                    <p className="text-gray-200">{product.price}</p>
+                  </div>
+                  <div className="absolute top-4 right-4">
+                    <span className="bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-semibold">RIVETS</span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h4 className="text-xl font-semibold text-gray-800 mb-3">{product.name}</h4>
+                  <p className="text-gray-600 mb-4 leading-relaxed">
+                    {product.description}
+                  </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Zap className="w-4 h-4 mr-1" />
+                      <span>Permanent</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      <span>Precision</span>
+                    </div>
+                  </div>
+                  <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Features Section */}
+          <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-12 mb-16">
+            <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">Why Choose Our Rivets & Pins?</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="bg-white rounded-xl p-8 shadow-lg">
+                  <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Permanent Fastening</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Provides secure, permanent connections that won't loosen over time or under vibration.
+                  </p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white rounded-xl p-8 shadow-lg">
+                  <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Settings className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Material Versatility</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Suitable for various materials including metal, plastic, wood, and composite materials.
+                  </p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white rounded-xl p-8 shadow-lg">
+                  <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Factory className="w-8 h-8 text-teal-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Easy Installation</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Simple installation process with standard tools for efficient assembly operations.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <section className="bg-red-600 py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Need Custom Rivets & Pins?
+            </h2>
+            <p className="text-lg mb-8 max-w-2xl mx-auto">
+              Contact our technical team for custom rivet and pin specifications and bulk orders. 
+              We provide tailored fastening solutions for your specific material and application requirements.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center">
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Get Custom Quote
+              </button>
+              <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-600 transition-colors flex items-center justify-center">
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Contact Us
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </Layout>
+  )
+}
