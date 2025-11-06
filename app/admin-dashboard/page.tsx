@@ -920,110 +920,108 @@ export default function AdminDashboard() {
                       </div>
                       <p className="text-xs text-gray-500">Premium products will be featured prominently</p>
                     </div>
-                    </div>
+                  </div>
                     
-                      {/* Grades */}
-                      <div className="space-y-2">
-                        <Label>Grades:</Label>
-                        {editingProduct ? editFormData.grades.map((grade, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={grade}
-                              onChange={(e) => handleEditArrayFieldChange("grades", index, e.target.value)}
-                              placeholder="e.g., Grade 8.8"
-                            />
-                            {editFormData.grades.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeEditArrayField("grades", index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        )) : formData.grades.map((grade, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={grade}
-                              onChange={(e) => handleArrayFieldChange("grades", index, e.target.value)}
-                              placeholder="e.g., Grade 8.8"
-                            />
-                            {formData.grades.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeArrayField("grades", index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editingProduct ? addEditArrayField("grades") : addArrayField("grades")}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Grade
-                        </Button>
+                  {/* Grades */}
+                  <div className="space-y-2">
+                    <Label>Grades:</Label>
+                    {editingProduct ? editFormData.grades.map((grade, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={grade}
+                          onChange={(e) => handleEditArrayFieldChange("grades", index, e.target.value)}
+                          placeholder="e.g., Grade 8.8"
+                        />
+                        {editFormData.grades.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeEditArrayField("grades", index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                      
-                      {/* Coating */}
-                      <div className="space-y-2">
-                        <Label>Coating:</Label>
-                        {editingProduct ? editFormData.coating.map((coat, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={coat}
-                              onChange={(e) => handleEditArrayFieldChange("coating", index, e.target.value)}
-                              placeholder="e.g., Zinc Plated"
-                            />
-                            {editFormData.coating.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeEditArrayField("coating", index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        )) : formData.coating.map((coat, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={coat}
-                              onChange={(e) => handleArrayFieldChange("coating", index, e.target.value)}
-                              placeholder="e.g., Zinc Plated"
-                            />
-                            {formData.coating.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeArrayField("coating", index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editingProduct ? addEditArrayField("coating") : addArrayField("coating")}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Coating
-                        </Button>
+                    )) : formData.grades.map((grade, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={grade}
+                          onChange={(e) => handleArrayFieldChange("grades", index, e.target.value)}
+                          placeholder="e.g., Grade 8.8"
+                        />
+                        {formData.grades.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeArrayField("grades", index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                    </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => editingProduct ? addEditArrayField("grades") : addArrayField("grades")}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Grade
+                    </Button>
+                  </div>
+                    
+                  {/* Coating */}
+                  <div className="space-y-2">
+                    <Label>Coating:</Label>
+                    {editingProduct ? editFormData.coating.map((coat, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={coat}
+                          onChange={(e) => handleEditArrayFieldChange("coating", index, e.target.value)}
+                          placeholder="e.g., Zinc Plated"
+                        />
+                        {editFormData.coating.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeEditArrayField("coating", index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )) : formData.coating.map((coat, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={coat}
+                          onChange={(e) => handleArrayFieldChange("coating", index, e.target.value)}
+                          placeholder="e.g., Zinc Plated"
+                        />
+                        {formData.coating.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeArrayField("coating", index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => editingProduct ? addEditArrayField("coating") : addArrayField("coating")}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Coating
+                    </Button>
                   </div>
 
                   {/* Image Link or Upload */}
