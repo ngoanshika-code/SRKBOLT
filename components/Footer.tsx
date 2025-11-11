@@ -133,9 +133,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-[#FFD5D5] mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-white/80 text-sm">
-                    SRK Bolt Industries<br />
+                <div className="text-white/80 text-sm">
+                  <p className="font-semibold text-white">Head Office</p>
+                  <p>
+                    Sharjah Publishing City Free Zone (SPC Free Zone)<br />
+                    Al Zahia, Sheikh Mohammed Bin Zayed Rd<br />
+                    Sharjah, United Arab Emirates
+                  </p>
+                  <p className="font-semibold text-white mt-4">Retail Outlet</p>
+                  <p>
                     SHOP- GA4304, near Entrance B<br />
                     Dubai Trade YIWU Market, Jabal Ali Industrial Second<br />
                     Dubai, United Arab Emirates

@@ -27,7 +27,14 @@ export default function ContactPage() {
                   {
                     title: "Head Office",
                     detail: [
-                      "SRK Bolt Industries",
+                      "Sharjah Publishing City Free Zone (SPC Free Zone)",
+                      "Al Zahia, Sheikh Mohammed Bin Zayed Rd",
+                      "Sharjah, United Arab Emirates",
+                    ],
+                  },
+                  {
+                    title: "Retail Outlet",
+                    detail: [
                       "SHOP- GA4304, near Entrance B",
                       "Dubai Trade YIWU Market, Jabal Ali Industrial Second",
                       "Dubai, United Arab Emirates",
