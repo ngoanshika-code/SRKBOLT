@@ -26,7 +26,12 @@ export default function ContactPage() {
                 {[
                   {
                     title: "Head Office",
-                    detail: ["SRK Bolt Industries", "Industrial Area, Phase 1", "Mumbai, Maharashtra 400001", "India"],
+                    detail: [
+                      "SRK Bolt Industries",
+                      "SHOP- GA4304, near Entrance B",
+                      "Dubai Trade YIWU Market, Jabal Ali Industrial Second",
+                      "Dubai, United Arab Emirates",
+                    ],
                   },
                   { title: "Phone", detail: ["+971 58 871 3064"] },
                   { title: "Email", detail: ["sales@srkbolts.com"] },

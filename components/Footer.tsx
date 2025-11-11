@@ -136,9 +136,9 @@ export default function Footer() {
                 <div>
                   <p className="text-white/80 text-sm">
                     SRK Bolt Industries<br />
-                    Industrial Area, Phase 1<br />
-                    Mumbai, Maharashtra 400001<br />
-                    India
+                    SHOP- GA4304, near Entrance B<br />
+                    Dubai Trade YIWU Market, Jabal Ali Industrial Second<br />
+                    Dubai, United Arab Emirates
                   </p>
                 </div>
               </div>
