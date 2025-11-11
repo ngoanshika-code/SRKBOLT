@@ -337,7 +337,7 @@ export default function SRKBoltHomepage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-[1.5px] border-white text-white hover:bg-white hover:text-[#A02222] transition-colors duration-300 font-semibold text-lg px-10 py-4 flex items-center justify-center gap-2"
+                className="border-[1.5px] border-white text-[#A02222] hover:bg-white hover:text-[#A02222] transition-colors duration-300 font-semibold text-lg px-10 py-4 flex items-center justify-center gap-2"
               >
                 <Phone className="w-5 h-5 mr-2" />
                 Call Now
