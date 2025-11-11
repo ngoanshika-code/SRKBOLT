@@ -429,9 +429,9 @@ export default function PaymentPage() {
                     <span>Subtotal</span>
                     <span>₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between text-primary">
+                  <div className="flex justify-between items-center text-muted-foreground">
                     <span>Shipping</span>
-                    <span>₹{shipping.toLocaleString('en-IN')}</span>
+                    <span>To be discussed</span>
                   </div>
                   <div className="flex justify-between text-primary">
                     <span>Tax</span>

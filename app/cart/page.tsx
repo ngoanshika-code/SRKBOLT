@@ -192,7 +192,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-primary">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `₹${shipping.toLocaleString('en-IN')}`}</span>
+                    <span>{shipping === 0 ? 'To be discussed' : `₹${shipping.toLocaleString('en-IN')}`}</span>
                   </div>
                   <div className="flex justify-between text-primary">
                     <span>Tax</span>

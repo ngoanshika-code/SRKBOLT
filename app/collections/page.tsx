@@ -9,7 +9,6 @@ import Footer from "@/components/Footer"
 import { useCart, cartUtils } from "@/contexts/CartContext"
 import { useToast } from "@/contexts/ToastContext"
 import Link from "next/link"
-import { products as defaultProducts } from "@/data/products"
 import { 
   Star, 
   Heart, 
@@ -46,61 +45,48 @@ export default function CollectionsPage() {
     try {
       setLoading(true)
       const response = await fetch('/api/products')
-      let adminProducts = []
-      
-      if (response.ok) {
-        adminProducts = await response.json()
-      } else {
-        console.error('Failed to fetch admin products')
+       if (!response.ok) {
+         throw new Error('Failed to fetch products')
       }
 
-      // Convert default products to match the database format
-      const convertedDefaultProducts = defaultProducts.map(product => ({
-        _id: `default-${product.id}`,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category: product.category,
-        images: product.images,
-        inStock: product.inStock,
-        weight: "100g",
-        origin: "Belgium",
-        ingredients: product.ingredients,
-        allergens: ["Milk", "Soy"],
-        features: product.features || [],
-        badges: product.badges,
-        rating: product.rating,
-        reviews: product.reviews.length
-      }))
+       const adminProducts = await response.json()
+       const normalizedProducts = Array.isArray(adminProducts)
+         ? adminProducts.map((product: any) => {
+             const images = Array.isArray(product.images)
+               ? Array.from(
+                   new Set(
+                     product.images
+                       .filter((url: unknown) => typeof url === 'string' && url.trim() !== '')
+                       .map((url: string) => url.trim())
+                   )
+                 ).slice(0, 3)
+               : []
+             const primaryImage = images[0] || (typeof product.imageLink === 'string' && product.imageLink.trim() !== '' ? product.imageLink.trim() : '/placeholder.jpg')
+             const gallery = images.length > 0 ? images : [primaryImage]
 
-      // Combine default products with admin products
-      const allProducts = [...convertedDefaultProducts, ...adminProducts]
-      setProducts(allProducts)
+             const numericPrice = typeof product.price === 'number'
+               ? product.price
+               : product.price && !Number.isNaN(Number(product.price))
+                 ? Number(product.price)
+                 : undefined
+
+             return {
+               ...product,
+               images: gallery,
+               category: product.category || 'Uncategorized',
+               price: numericPrice,
+             }
+           })
+         : []
+
+       setProducts(normalizedProducts)
     } catch (error) {
       console.error('Error fetching products:', error)
-      // If there's an error, still show default products
-      const convertedDefaultProducts = defaultProducts.map(product => ({
-        _id: `default-${product.id}`,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category: product.category,
-        images: product.images,
-        inStock: product.inStock,
-        weight: "100g",
-        origin: "Belgium",
-        ingredients: product.ingredients,
-        allergens: ["Milk", "Soy"],
-        features: product.features || [],
-        badges: product.badges,
-        rating: product.rating,
-        reviews: product.reviews.length
-      }))
-      setProducts(convertedDefaultProducts)
+       setProducts([])
       toast({
         title: "Warning",
-        description: "Showing default products only. Admin products unavailable.",
-        variant: "destructive"
+         description: "Unable to load products from inventory.",
+         variant: "destructive",
       })
     } finally {
       setLoading(false)
@@ -108,13 +94,16 @@ export default function CollectionsPage() {
   }
 
   const handleAddToCart = (product: any) => {
+    const price = typeof product.price === 'number' ? product.price : 0
+    const image = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '/placeholder.jpg'
+
     cartUtils.addToCart(dispatch, {
       id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.images[0] || '/placeholder.jpg',
-      description: product.description,
-      inStock: product.inStock
+      name: product.name || 'Untitled Product',
+      price,
+      image,
+      description: product.description || '',
+      inStock: product.inStock ?? true
     })
     toast({
       title: "Product successfully added to cart",
@@ -124,15 +113,24 @@ export default function CollectionsPage() {
   }
 
   const filteredProducts = products.filter(product => {
-    return selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory
+    if (selectedCategory === 'all') return true
+    const productCategory = (product.category || 'Uncategorized').toLowerCase()
+    return productCategory === selectedCategory
   })
 
+  const categoryCounts = products.reduce<Record<string, { id: string; name: string; count: number }>>((acc, product) => {
+    const categoryName = (product.category || 'Uncategorized').trim()
+    const id = categoryName.toLowerCase()
+    if (!acc[id]) {
+      acc[id] = { id, name: categoryName, count: 0 }
+    }
+    acc[id].count += 1
+    return acc
+  }, {})
+
   const categories = [
-    { id: 'all', name: 'All Collections', count: products.length },
-    { id: 'dark chocolate', name: 'Dark Chocolate', count: products.filter(p => p.category.toLowerCase() === 'dark chocolate').length },
-    { id: 'milk chocolate', name: 'Milk Chocolate', count: products.filter(p => p.category.toLowerCase() === 'milk chocolate').length },
-    { id: 'white chocolate', name: 'White Chocolate', count: products.filter(p => p.category.toLowerCase() === 'white chocolate').length },
-    { id: 'truffles', name: 'Truffles', count: products.filter(p => p.category.toLowerCase() === 'truffles').length },
+    { id: 'all', name: 'All Products', count: products.length },
+    ...Object.values(categoryCounts).sort((a, b) => a.name.localeCompare(b.name)),
   ]
 
   return (
@@ -289,11 +287,13 @@ export default function CollectionsPage() {
                       <h3 className="text-xl font-serif font-bold text-primary group-hover:text-accent transition-colors">
                         {product.name}
                       </h3>
-                      <span className="text-lg font-semibold text-accent">₹{product.price.toLocaleString('en-IN')}</span>
+                      <span className="text-lg font-semibold text-accent">
+                        {typeof product.price === 'number' ? `₹${product.price.toLocaleString('en-IN')}` : 'Contact for pricing'}
+                      </span>
                     </div>
                     
                     <p className="text-muted-foreground text-sm mb-4 leading-relaxed font-light">
-                      {product.description}
+                      {product.equivalentStandard ? `Equivalent Standard: ${product.equivalentStandard}` : ''}
                     </p>
                     
                     {/* Rating */}
@@ -378,11 +378,13 @@ export default function CollectionsPage() {
                         <h3 className="text-2xl font-serif font-bold text-primary group-hover:text-accent transition-colors">
                           {product.name}
                         </h3>
-                        <span className="text-xl font-semibold text-accent">₹{product.price.toLocaleString('en-IN')}</span>
+                        <span className="text-xl font-semibold text-accent">
+                          {typeof product.price === 'number' ? `₹${product.price.toLocaleString('en-IN')}` : 'Contact for pricing'}
+                        </span>
                       </div>
                       
                       <p className="text-muted-foreground mb-4 leading-relaxed font-light">
-                        {product.description}
+                        {product.equivalentStandard ? `Equivalent Standard: ${product.equivalentStandard}` : ''}
                       </p>
                       
                       {/* Rating */}

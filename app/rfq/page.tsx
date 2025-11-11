@@ -314,7 +314,7 @@ export default function RFQPage() {
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
-                      <span>Free</span>
+                      <span>To be discussed</span>
                     </div>
                   </div>
 

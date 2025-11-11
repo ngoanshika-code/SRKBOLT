@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCollection } from '@/lib/mongodb'
+import { sendNotificationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, number, address, productName, productCategory, productStandard, productMaterial } = body
+    const name = body.name?.trim()
+    const mobile = body.mobile?.trim() || body.number?.trim()
+    const email = body.email?.trim()
+    const companyName = body.companyName?.trim() || body.address?.trim()
+    const { productName, productCategory, productStandard, productMaterial } = body
 
     // Validation
-    if (!name || !number || !address || !productName) {
+    if (!name || !mobile || !email || !companyName || !productName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -16,10 +21,11 @@ export async function POST(request: NextRequest) {
 
     const collection = await getCollection('datasheet_downloads')
     
-    const downloadRecord = {
+    const downloadRecord: Record<string, any> = {
       name,
-      number,
-      address,
+      mobile,
+      email,
+      companyName,
       productName,
       productCategory: productCategory || '',
       productStandard: productStandard || '',
@@ -28,12 +34,36 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     }
 
+    if (body.number) {
+      downloadRecord.number = body.number
+    }
+
+    if (body.address) {
+      downloadRecord.address = body.address
+    }
+
     const result = await collection.insertOne(downloadRecord)
 
+    await sendNotificationEmail({
+      subject: `New Data Sheet Request – ${productName}`,
+      html: `
+        <h2>New Data Sheet Download Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mobile:</strong> ${mobile}</p>
+        <p><strong>Company:</strong> ${companyName}</p>
+        <p><strong>Product:</strong> ${productName}</p>
+        <p><strong>Category:</strong> ${productCategory || 'N/A'}</p>
+        <p><strong>Standard:</strong> ${productStandard || 'N/A'}</p>
+        <p><strong>Material:</strong> ${productMaterial || 'N/A'}</p>
+        <p>This request was received on ${new Date().toLocaleString()}.</p>
+      `,
+    })
+
     return NextResponse.json(
-      { 
+      {
         message: 'Data sheet download recorded successfully',
-        id: result.insertedId 
+        id: result.insertedId,
       },
       { status: 201 }
     )

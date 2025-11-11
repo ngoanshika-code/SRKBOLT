@@ -41,8 +41,10 @@ interface Product {
   category: string
   inStock: boolean
   images: string[]
+  imageLinks?: string[]
   imageLink?: string
   standard?: string
+  equivalentStandard?: string
   material?: string
   grades?: string[]
   sizes?: string
@@ -55,6 +57,7 @@ interface Product {
   warrantyInfo?: string
   specifications: {
     standard?: string
+    equivalentStandard?: string
     material?: string
     grades?: string[]
     sizes?: string
@@ -93,8 +96,9 @@ export default function AdminDashboard() {
     inStock: true,
     premium: false,
     images: [] as File[],
-    imageLink: "",
+    imageLinks: [""] as string[],
     standard: "",
+    equivalentStandard: "",
     material: "",
     sizes: "",
     grades: [""],
@@ -118,8 +122,9 @@ export default function AdminDashboard() {
     inStock: true,
     premium: false,
     images: [] as File[],
-    imageLink: "",
+    imageLinks: [""] as string[],
     standard: "",
+    equivalentStandard: "",
     material: "",
     sizes: "",
     grades: [""],
@@ -136,6 +141,13 @@ export default function AdminDashboard() {
   })
   const [uploadingImages, setUploadingImages] = useState(false)
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
+  const MAX_IMAGES = 3
+
+  const currentImageLinks = editingProduct ? editFormData.imageLinks : formData.imageLinks
+  const sanitizedManualLinks = (currentImageLinks || [])
+    .map((url) => (typeof url === 'string' ? url.trim() : ''))
+    .filter((url) => url.length > 0)
+  const remainingImageSlots = Math.max(0, MAX_IMAGES - (sanitizedManualLinks.length + uploadedImageUrls.length))
 
   // Check authentication on component mount
   useEffect(() => {
@@ -297,10 +309,29 @@ export default function AdminDashboard() {
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return
+ 
+     if (remainingImageSlots <= 0) {
+       toast({
+         title: "Image Limit Reached",
+         description: `You can upload a maximum of ${MAX_IMAGES} product images.`,
+         variant: "destructive",
+       })
+       return
+     }
+ 
+     const filesToUpload = Array.from(files).slice(0, remainingImageSlots)
+     if (filesToUpload.length === 0) {
+       toast({
+         title: "Image Limit Reached",
+         description: `You can upload a maximum of ${MAX_IMAGES} product images.`,
+         variant: "destructive",
+       })
+       return
+     }
 
     try {
       setUploadingImages(true)
-      const uploadPromises = Array.from(files).map(async (file) => {
+       const uploadPromises = filesToUpload.map(async (file) => {
         const formData = new FormData()
         formData.append('file', file)
 
@@ -318,11 +349,16 @@ export default function AdminDashboard() {
       })
 
       const urls = await Promise.all(uploadPromises)
-      setUploadedImageUrls(prev => [...prev, ...urls])
+       setUploadedImageUrls(prev => {
+         const merged = [...prev, ...urls]
+           .filter((url) => typeof url === 'string' && url.trim() !== '')
+           .map((url) => url.trim())
+         return Array.from(new Set(merged)).slice(0, MAX_IMAGES)
+       })
       
       toast({
         title: "Images Uploaded Successfully",
-        description: `${files.length} image(s) uploaded to Cloudinary`,
+         description: `${filesToUpload.length} image(s) uploaded to Cloudinary`,
         variant: "success",
       })
     } catch (error) {
@@ -362,6 +398,20 @@ export default function AdminDashboard() {
   // Edit functions
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product)
+    const rawImages = Array.isArray(product.images) ? [...product.images] : []
+    if (rawImages.length === 0 && product.imageLink) {
+      rawImages.push(product.imageLink)
+    }
+    const sanitizedImages = rawImages
+      ? Array.from(
+          new Set(
+            rawImages
+              .filter((url) => typeof url === 'string' && url.trim() !== '')
+              .map((url) => url.trim())
+          )
+        ).slice(0, MAX_IMAGES)
+      : []
+
     setEditFormData({
       name: product.name,
       description: product.description,
@@ -369,8 +419,9 @@ export default function AdminDashboard() {
       inStock: product.inStock,
       premium: product.premium || false,
       images: [],
-      imageLink: product.imageLink || "",
+      imageLinks: sanitizedImages.length > 0 ? sanitizedImages : [""],
       standard: product.standard || product.specifications?.standard || "",
+      equivalentStandard: product.equivalentStandard || product.specifications?.equivalentStandard || product.standard || product.specifications?.standard || "",
       material: product.material || product.specifications?.material || "",
       sizes: product.sizes || product.specifications?.sizes || "",
       grades: product.grades && product.grades.length > 0 ? product.grades : (product.specifications?.grades && product.specifications.grades.length > 0 ? product.specifications.grades : [""]),
@@ -385,6 +436,7 @@ export default function AdminDashboard() {
       threadType: product.specifications?.threadType || "",
       finish: product.specifications?.finish && product.specifications.finish.length > 0 ? product.specifications.finish : [""]
     })
+    setUploadedImageUrls([])
     setActiveTab("add-product")
   }
 
@@ -429,25 +481,35 @@ export default function AdminDashboard() {
     
     if (!editingProduct) return
 
-    // Validation
-    if (!editFormData.name.trim() || !editFormData.description.trim() || !editFormData.category) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      })
-      return
-    }
-
     try {
       setSubmitting(true)
 
       // Combine uploaded images and image link
-      const finalImages = uploadedImageUrls.length > 0 
-        ? uploadedImageUrls 
-        : editFormData.imageLink 
-          ? [editFormData.imageLink] 
-          : editingProduct.images
+      const manualLinks = (editFormData.imageLinks || [])
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0)
+
+      const limitedManualLinks = manualLinks.slice(0, MAX_IMAGES)
+
+      let combinedImages = [...limitedManualLinks, ...uploadedImageUrls]
+
+      if (combinedImages.length === 0 && Array.isArray(editingProduct.images)) {
+        combinedImages = Array.from(
+          new Set(
+            editingProduct.images
+              .filter((url) => typeof url === 'string' && url.trim() !== '')
+              .map((url) => url.trim())
+          )
+        )
+      }
+
+      const finalImages = Array.from(
+        new Set(
+          combinedImages
+            .filter((url) => typeof url === 'string' && url.trim() !== '')
+            .map((url) => url.trim())
+        )
+      ).slice(0, MAX_IMAGES)
 
       const productData = {
         name: editFormData.name,
@@ -456,8 +518,10 @@ export default function AdminDashboard() {
         inStock: editFormData.inStock,
         premium: editFormData.premium,
         images: finalImages,
-        imageLink: editFormData.imageLink || undefined,
+        imageLink: limitedManualLinks[0] || undefined,
+        imageLinks: limitedManualLinks,
         standard: editFormData.standard || undefined,
+        equivalentStandard: editFormData.equivalentStandard || undefined,
         material: editFormData.material || undefined,
         sizes: editFormData.sizes || undefined,
         grades: editFormData.grades.filter(g => g.trim() !== ""),
@@ -470,6 +534,7 @@ export default function AdminDashboard() {
         warrantyInfo: editFormData.warrantyInfo || undefined,
         specifications: {
           standard: editFormData.standard || undefined,
+          equivalentStandard: editFormData.equivalentStandard || undefined,
           material: editFormData.material || undefined,
           sizes: editFormData.sizes || undefined,
           grades: editFormData.grades.filter(g => g.trim() !== ""),
@@ -505,8 +570,9 @@ export default function AdminDashboard() {
           inStock: true,
           premium: false,
           images: [],
-          imageLink: "",
+          imageLinks: [""],
           standard: "",
+          equivalentStandard: "",
           material: "",
           sizes: "",
           grades: [""],
@@ -521,6 +587,7 @@ export default function AdminDashboard() {
           threadType: "",
           finish: [""]
         })
+        setUploadedImageUrls([])
         fetchProducts()
       } else {
         const errorData = await response.json()
@@ -551,8 +618,9 @@ export default function AdminDashboard() {
       inStock: true,
       premium: false,
       images: [],
-      imageLink: "",
+      imageLinks: [""],
       standard: "",
+      equivalentStandard: "",
       material: "",
       sizes: "",
       grades: [""],
@@ -567,30 +635,31 @@ export default function AdminDashboard() {
       threadType: "",
       finish: [""]
     })
+    setUploadedImageUrls([])
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Validation
-    if (!formData.name || !formData.description || !formData.category) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields (Name, Description, Category)",
-        variant: "destructive"
-      })
-      return
-    }
 
     try {
       setSubmitting(true)
       
       // Combine uploaded images and image link
-      const finalImages = uploadedImageUrls.length > 0 
-        ? uploadedImageUrls 
-        : formData.imageLink 
-          ? [formData.imageLink] 
-          : []
+      const manualLinks = (formData.imageLinks || [])
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0)
+
+      const limitedManualLinks = manualLinks.slice(0, MAX_IMAGES)
+
+      const combinedImages = [...limitedManualLinks, ...uploadedImageUrls]
+
+      const finalImages = Array.from(
+        new Set(
+          combinedImages
+            .filter((url) => typeof url === 'string' && url.trim() !== '')
+            .map((url) => url.trim())
+        )
+      ).slice(0, MAX_IMAGES)
 
       const productData = {
         name: formData.name,
@@ -599,8 +668,10 @@ export default function AdminDashboard() {
         inStock: formData.inStock,
         premium: formData.premium,
         images: finalImages,
-        imageLink: formData.imageLink || undefined,
+        imageLink: limitedManualLinks[0] || undefined,
+        imageLinks: limitedManualLinks,
         standard: formData.standard || undefined,
+        equivalentStandard: formData.equivalentStandard || undefined,
         material: formData.material || undefined,
         sizes: formData.sizes || undefined,
         grades: formData.grades.filter(g => g.trim() !== ""),
@@ -613,6 +684,7 @@ export default function AdminDashboard() {
         warrantyInfo: formData.warrantyInfo || undefined,
         specifications: {
           standard: formData.standard || undefined,
+          equivalentStandard: formData.equivalentStandard || undefined,
           material: formData.material || undefined,
           sizes: formData.sizes || undefined,
           grades: formData.grades.filter(g => g.trim() !== ""),
@@ -640,8 +712,9 @@ export default function AdminDashboard() {
           inStock: true,
           premium: false,
           images: [],
-          imageLink: "",
+          imageLinks: [""],
           standard: "",
+          equivalentStandard: "",
           material: "",
           sizes: "",
           grades: [""],
@@ -828,13 +901,12 @@ export default function AdminDashboard() {
                 <form onSubmit={editingProduct ? handleEditSubmit : handleSubmit} className="space-y-6">
                   {/* Title */}
                   <div className="space-y-2">
-                    <Label htmlFor="name">Title *</Label>
+                    <Label htmlFor="name">Title</Label>
                     <Input
                       id="name"
                       value={editingProduct ? editFormData.name : formData.name}
                       onChange={(e) => editingProduct ? handleEditInputChange("name", e.target.value) : handleInputChange("name", e.target.value)}
                       placeholder="e.g., DIN 933 / 931 Hexagon Bolt"
-                      required
                     />
                   </div>
 
@@ -854,11 +926,11 @@ export default function AdminDashboard() {
                     <h3 className="text-lg font-semibold mb-4">Specifications</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="spec-standard">Standard:</Label>
+                        <Label htmlFor="equivalentStandard">Equivalent Standard:</Label>
                         <Input
-                          id="spec-standard"
-                          value={editingProduct ? editFormData.standard : formData.standard}
-                          onChange={(e) => editingProduct ? handleEditInputChange("standard", e.target.value) : handleInputChange("standard", e.target.value)}
+                          id="equivalentStandard"
+                          value={editingProduct ? editFormData.equivalentStandard : formData.equivalentStandard}
+                          onChange={(e) => editingProduct ? handleEditInputChange("equivalentStandard", e.target.value) : handleInputChange("equivalentStandard", e.target.value)}
                           placeholder="e.g., DIN 933 / 931"
                         />
                       </div>
@@ -882,12 +954,22 @@ export default function AdminDashboard() {
                           placeholder="e.g., M6 to M42"
                         />
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="threadType">Thread Type:</Label>
+                        <Input
+                          id="threadType"
+                          value={editingProduct ? editFormData.threadType : formData.threadType}
+                          onChange={(e) => editingProduct ? handleEditInputChange("threadType", e.target.value) : handleInputChange("threadType", e.target.value)}
+                          placeholder="e.g., Metric Coarse, UNC, UNF"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category *</Label>
+                      <Label htmlFor="category">Category</Label>
                       <Select value={editingProduct ? editFormData.category : formData.category} onValueChange={(value) => editingProduct ? handleEditInputChange("category", value) : handleInputChange("category", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -920,125 +1002,162 @@ export default function AdminDashboard() {
                       </div>
                       <p className="text-xs text-gray-500">Premium products will be featured prominently</p>
                     </div>
-                  </div>
+                    </div>
                     
-                  {/* Grades */}
-                  <div className="space-y-2">
-                    <Label>Grades:</Label>
-                    {editingProduct ? editFormData.grades.map((grade, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={grade}
-                          onChange={(e) => handleEditArrayFieldChange("grades", index, e.target.value)}
-                          placeholder="e.g., Grade 8.8"
-                        />
-                        {editFormData.grades.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeEditArrayField("grades", index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
+                      {/* Grades */}
+                      <div className="space-y-2">
+                        <Label>Grades:</Label>
+                        {editingProduct ? editFormData.grades.map((grade, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              value={grade}
+                              onChange={(e) => handleEditArrayFieldChange("grades", index, e.target.value)}
+                              placeholder="e.g., Grade 8.8"
+                            />
+                            {editFormData.grades.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeEditArrayField("grades", index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )) : formData.grades.map((grade, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              value={grade}
+                              onChange={(e) => handleArrayFieldChange("grades", index, e.target.value)}
+                              placeholder="e.g., Grade 8.8"
+                            />
+                            {formData.grades.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeArrayField("grades", index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => editingProduct ? addEditArrayField("grades") : addArrayField("grades")}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Grade
+                        </Button>
                       </div>
-                    )) : formData.grades.map((grade, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={grade}
-                          onChange={(e) => handleArrayFieldChange("grades", index, e.target.value)}
-                          placeholder="e.g., Grade 8.8"
-                        />
-                        {formData.grades.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeArrayField("grades", index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => editingProduct ? addEditArrayField("grades") : addArrayField("grades")}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Grade
-                    </Button>
-                  </div>
-                    
-                  {/* Coating */}
-                  <div className="space-y-2">
-                    <Label>Coating:</Label>
-                    {editingProduct ? editFormData.coating.map((coat, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={coat}
-                          onChange={(e) => handleEditArrayFieldChange("coating", index, e.target.value)}
-                          placeholder="e.g., Zinc Plated"
-                        />
-                        {editFormData.coating.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeEditArrayField("coating", index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    )) : formData.coating.map((coat, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={coat}
-                          onChange={(e) => handleArrayFieldChange("coating", index, e.target.value)}
-                          placeholder="e.g., Zinc Plated"
-                        />
-                        {formData.coating.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeArrayField("coating", index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => editingProduct ? addEditArrayField("coating") : addArrayField("coating")}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Coating
-                    </Button>
+                      
+                      {/* Coating */}
+                      <div className="space-y-2">
+                        <Label>Coating:</Label>
+                        {editingProduct ? editFormData.coating.map((coat, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              value={coat}
+                              onChange={(e) => handleEditArrayFieldChange("coating", index, e.target.value)}
+                              placeholder="e.g., Zinc Plated"
+                            />
+                            {editFormData.coating.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeEditArrayField("coating", index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )) : formData.coating.map((coat, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              value={coat}
+                              onChange={(e) => handleArrayFieldChange("coating", index, e.target.value)}
+                              placeholder="e.g., Zinc Plated"
+                            />
+                            {formData.coating.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeArrayField("coating", index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => editingProduct ? addEditArrayField("coating") : addArrayField("coating")}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Coating
+                        </Button>
                   </div>
 
                   {/* Image Link or Upload */}
                   <div className="space-y-4">
-                    <Label>Image Link or Upload Image</Label>
-                    
-                    {/* Image Link Input */}
                     <div className="space-y-2">
-                      <Label htmlFor="imageLink">Image URL (Optional)</Label>
+                      <Label>Image Links (Optional)</Label>
+                      <p className="text-xs text-gray-500">Paste direct image URLs. Uploaded files and links combined can contain up to {MAX_IMAGES} items.</p>
+                      {(currentImageLinks || []).map((link, index) => (
+                        <div key={index} className="flex gap-2">
                       <Input
-                        id="imageLink"
                         type="url"
-                        value={editingProduct ? editFormData.imageLink : formData.imageLink}
-                        onChange={(e) => editingProduct ? handleEditInputChange("imageLink", e.target.value) : handleInputChange("imageLink", e.target.value)}
+                            value={link}
+                            onChange={(e) => editingProduct
+                              ? handleEditArrayFieldChange("imageLinks", index, e.target.value)
+                              : handleArrayFieldChange("imageLinks", index, e.target.value)}
                         placeholder="https://example.com/image.jpg"
                       />
-                      <p className="text-xs text-gray-500">Enter image URL or upload image below</p>
+                          {(currentImageLinks?.length || 0) > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => editingProduct
+                                ? removeEditArrayField("imageLinks", index)
+                                : removeArrayField("imageLinks", index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (remainingImageSlots <= 0) {
+                              toast({
+                                title: "Image Limit Reached",
+                                description: `Maximum of ${MAX_IMAGES} images allowed. Remove an image to add another.`,
+                                variant: "destructive",
+                              })
+                              return
+                            }
+                            editingProduct ? addEditArrayField("imageLinks") : addArrayField("imageLinks")
+                          }}
+                          disabled={remainingImageSlots <= 0}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Image Link
+                        </Button>
+                        <span className="text-xs text-gray-500">Slots remaining: {remainingImageSlots}</span>
+                      </div>
                     </div>
                     
                     {/* File Upload Area */}
@@ -1065,7 +1184,7 @@ export default function AdminDashboard() {
                               Click to upload images or videos
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              Supports: JPG, PNG, GIF, MP4, MOV (Max 5MB each)
+                              Supports: JPG, PNG, GIF, MP4, MOV (Max 5MB each). {remainingImageSlots} upload slot(s) remaining.
                             </p>
                           </div>
                         )}
@@ -1214,14 +1333,13 @@ export default function AdminDashboard() {
 
                   {/* Product Description */}
                   <div className="space-y-2">
-                    <Label htmlFor="description">Product Description *</Label>
+                    <Label htmlFor="description">Product Description</Label>
                     <Textarea
                       id="description"
                       value={editingProduct ? editFormData.description : formData.description}
                       onChange={(e) => editingProduct ? handleEditInputChange("description", e.target.value) : handleInputChange("description", e.target.value)}
                       placeholder="Enter product description"
                       rows={4}
-                      required
                     />
                   </div>
 
@@ -1515,8 +1633,9 @@ export default function AdminDashboard() {
                         <tr className="bg-gray-50 border-b">
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">S.No</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Contact</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Address</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Mobile</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Company</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Product Name</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Category</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Standard</th>
@@ -1534,10 +1653,13 @@ export default function AdminDashboard() {
                               {download.name}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                              {download.number}
+                              {download.mobile || download.number || '-'}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={download.address}>
-                              {download.address}
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                              {download.email || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={download.companyName || download.address}>
+                              {download.companyName || download.address || '-'}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                               {download.productName}

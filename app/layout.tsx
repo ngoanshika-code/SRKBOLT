@@ -24,9 +24,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Savron - Premium Artisan Chocolates",
+  title: "SRK Bolt Industries | Premium Fasteners & Engineering Solutions",
   description:
-    "Discover the finest handcrafted chocolates made with passion and premium ingredients. Savron delivers luxury chocolate experiences.",
+    "SRK Bolt supplies high-performance industrial fasteners, custom bolt solutions, and engineering support across infrastructure, oil & gas, automotive, and manufacturing sectors.",
   generator: "v0.app",
 }
 

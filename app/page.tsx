@@ -15,18 +15,9 @@ import {
   MessageCircle,
 } from "lucide-react"
 import { useRFQ } from "@/contexts/RFQContext"
-
-// Type definitions
-interface Product {
-  name: string
-  image: string
-}
+import { useCategoryProducts, type CategoryProductCard } from "@/hooks/useCategoryProducts"
 
 type CategoryKey = "BOLTS" | "NUTS" | "WASHERS" | "SCREWS" | "HOOK & EYE" | "RIVETS" | "ATTACHMENTS" | "OTHER"
-
-interface ProductsByCategory {
-  [key: string]: Product[]
-}
 
 export default function SRKBoltHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -68,115 +59,6 @@ export default function SRKBoltHomepage() {
     setCurrentSlide((prev: number) => (prev - 1 + slides.length) % slides.length)
   }
 
-  // Product data organized by categories with Husaini Brothers authentic product images
-  const productsByCategory: ProductsByCategory = {
-    BOLTS: [
-      { name: "DIN 933 / 931 Hexagon Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "ASTM A325M Heavy Hexagon Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "ASTM A490M Heavy Hexagon Bolt Friction Grip", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 975/976-1 Threaded Rods", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 912 Allen Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 7991 Allen CSK Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Eye Bolt With 2washer Nut", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 186B T Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Track Shoe Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 939 1.25D Engineering Stud", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 938 1D Engineering Stud", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 835 2D Engineering Stud", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" }
-    ],
-    NUTS: [
-      { name: "DIN 6331 Hex Nut With Collar", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 985/982 Self Locking Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 6926 Self Locking Hexagon Flange Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 917 Hexagon Cap Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 928 Square Weld Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 936 Hexagon Thin Nut, Medium", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 439 Hexagon Very Thin Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "Cage Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "NUT Cylindrical Cage Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 937 Castle Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "DIN 979 Castle Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" },
-      { name: "NUT Speed Nut", image: "https://www.husainibrothers.com/cdn/images/200/2234904239_1635767136.jpg" }
-    ],
-    WASHERS: [
-      { name: "DIN 6796 Conical Spring Washer", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "NF E 25 511 Afnor Serrated Conical Contact Washers", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "NF E 25 514 Afnor Washers Type", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "DIN 137 Wave Spring Washer", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "Safety Washers", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "Schnorr Washers", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "Nord Lock Washers", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "DIN 6798 A Serrated Lock Washers", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "DIN 6798 J Serrated Lock Washer Internal Teeth", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "DIN 6798 V Serrated Lock Washer External Teeth", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" },
-      { name: "DIN 6797 A External Toothed Lock Washer", image: "https://www.husainibrothers.com/cdn/images/200/4239323714_1635767753.jpg" }
-    ],
-    SCREWS: [
-      { name: "DIN 86 Roundhead Machine Screw", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "DIN 914 Cone Point Grub Screw", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Dog Point Grub Screw", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Torx Screw, Countersunk Head", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Socket Head Taptite", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Screw Hammer Drive Screw, U Type", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Screw Hex Slotted Self Tapping Screw", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Chipboard Screws", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "DIN 18182-2 Drywall Screws", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "Security Screws", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "DIN 7504 K Hexagon Self Drilling Screws", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" },
-      { name: "DIN 7504 P Counter Sunk Self Drilling Screw", image: "https://www.husainibrothers.com/cdn/images/200/roundhead-machine-screw.jpg" }
-    ],
-    "HOOK & EYE": [
-      { name: "D Shackle", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Twisted Dee Chain Shackle", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Long D Shackle", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Wide D Shackle", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Bow Shackle", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Bow Shackle Hook Eye", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Turnbuckle, Eye And Eye", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Turnbuckle, Hook And Hook", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Turnbuckle, Jaw And Jaw", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Swivel Eye And Eye", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Swivel Eye And Jaw", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" },
-      { name: "Screw Eyes", image: "https://www.husainibrothers.com/cdn/images/200/4226372436_1635929365.jpg" }
-    ],
-    RIVETS: [
-      { name: "DIN 472 Retaining Rings Internal Circlip", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 471 Retaining Rings External Circlip", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 6799 E Style External Retaining Ring", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 94 Cotter Split Pin", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 11024 R PIN", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 11024 R Pin Double Ring", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 1434 Clevis Pin", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 1481 Spring Dowel Pin", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 662 Round Head Rivet", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "Self Tapping Threaded Inserts", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 7 Dowel Cylindrical Pin", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" },
-      { name: "DIN 664 Flat Round Head Rivet", image: "https://www.husainibrothers.com/cdn/images/200/7698225208_1635930464.jpg" }
-    ],
-    ATTACHMENTS: [
-      { name: "Anchor Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Rawl Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Sheer Stud", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "L Shaped Anchor Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "J Shaped Anchor Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Chemical Anchor Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 301 Hose Clamps With Worm Gear Drive Type A", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" }
-    ],
-    OTHER: [
-      { name: "DIN 763 Chain Long Link", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 766 Chain Short Link", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Door Hinge, Equal", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Door Hinge, Unequal", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Flush Door Hinges Equal", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Butt Hinge", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Din 6336 K Star Grip, Type K, Knob Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "DIN 6336 L Star Grip, Type L Knob Bolt", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Turning Knob", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Five Lobe Grip", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" },
-      { name: "Disc Knob", image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg" }
-    ]
-  }
-
   const categories = [
     { name: "BOLTS", icon: Wrench },
     { name: "NUTS", icon: Settings },
@@ -188,14 +70,19 @@ export default function SRKBoltHomepage() {
     { name: "OTHER", icon: Settings },
   ]
 
-  const { rfqCount, addToRFQ } = useRFQ();
+  const { rfqCount, addToRFQ } = useRFQ()
 
-  // Function to generate WhatsApp URL with product information
-  const handleWhatsAppClick = (product: Product) => {
-    const phoneNumber = "919321362064" // WhatsApp number with country code
-    const message = `Hello! I'm interested in this product:\n\nProduct Name: ${product.name}\nCategory: ${selectedCategory}\n\nPlease provide more information about this product.`
+  const {
+    databaseProducts,
+    loading: categoryLoading,
+    error: categoryError,
+  } = useCategoryProducts(selectedCategory)
+
+  const handleWhatsAppClick = (product: CategoryProductCard) => {
+    const phoneNumber = "971588713064" // WhatsApp number with country code
+    const message = `Hello! I'm interested in this product:\n\nProduct Name: ${product.name}\nCategory: ${product.category}\n\nPlease provide more information about this product.`
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
+    window.open(whatsappUrl, "_blank")
   }
 
   return (
@@ -258,11 +145,11 @@ export default function SRKBoltHomepage() {
       </section>
 
       {/* Product Catalog Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-[#F9F9F9]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">PRODUCT CATALOGUE</h2>
-            <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold text-[#2E1F44] mb-4">PRODUCT CATALOGUE</h2>
+            <p className="text-[#555] text-lg max-w-3xl mx-auto">
               5k+ SKU's of fasteners supplies sourced from reputed manufacturers across India, Europe and Far East Asia available in stock.
             </p>
           </div>
@@ -273,10 +160,10 @@ export default function SRKBoltHomepage() {
               <button
                 key={index}
                 onClick={() => setSelectedCategory(category.name as CategoryKey)}
-                className={`p-4 rounded-lg text-center cursor-pointer transition-all duration-300 ${
+                className={`p-4 rounded-xl text-center cursor-pointer transition-all duration-300 border ${
                   selectedCategory === category.name
-                    ? 'bg-red-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-[#A02222] text-white border-[#A02222] shadow-lg'
+                    : 'bg-[#EDEDED] text-[#2E1F44] border-transparent hover:border-[#A02222]'
                 }`}
               >
                 <category.icon className="w-8 h-8 mx-auto mb-2" />
@@ -289,9 +176,28 @@ export default function SRKBoltHomepage() {
           </div>
           
           {/* Product Grid */}
+          {categoryError && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 text-center">
+              {categoryError}
+            </div>
+          )}
+          {categoryLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div key={idx} className="h-72 bg-white/60 border border-[#E5E5E5] rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : databaseProducts.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[#A02222]/30 bg-white/60 p-12 text-center text-[#2E1F44]/70 mb-8">
+              No products available in this category yet. Add new items from the admin dashboard to populate this catalogue.
+            </div>
+          ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {productsByCategory[selectedCategory]?.slice(0, 8).map((product: Product, index: number) => (
-              <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+              {databaseProducts.slice(0, 8).map((product) => (
+              <div
+                  key={product.id ?? product.name}
+                  className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-lg transition-all duration-300 overflow-hidden"
+                >
                 {/* Product Image */}
                 <div className="aspect-square bg-gray-50 flex items-center justify-center p-4">
                   <img
@@ -302,23 +208,26 @@ export default function SRKBoltHomepage() {
                 </div>
                 
                 {/* Product Name */}
-                <div className="p-3 text-center">
-                  <h3 className="text-sm font-medium text-gray-800 leading-tight">{product.name}</h3>
+                <div className="p-4 text-center">
+                  <h3 className="text-base font-semibold text-[#2E1F44] leading-tight">{product.name}</h3>
                 </div>
                 
                 {/* Buttons */}
-                <div className="p-3 pt-0">
-                  <div className="flex gap-2 mb-2">
+                <div className="px-4 pb-4">
+                  <div className="flex gap-2 mb-3">
                     <button 
-                      onClick={() => window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=${selectedCategory}`}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200 flex items-center justify-center"
+                      onClick={() => {
+                          const categoryParam = encodeURIComponent(product.category || selectedCategory)
+                          window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=${categoryParam}`
+                        }}
+                      className="flex-1 border border-[#2E1F44] text-[#2E1F44] text-xs font-semibold py-2 rounded-md transition-colors duration-200 flex items-center justify-center hover:bg-[#A02222] hover:text-white hover:border-[#A02222]"
                     >
                       <FileText className="w-3 h-3 mr-1" />
                       VIEW-DETAIL
                     </button>
                     <button 
                       onClick={() => handleWhatsAppClick(product)}
-                      className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200 flex items-center justify-center"
+                      className="flex-1 bg-[#25D366] hover:bg-[#1ebe5a] text-white text-xs font-semibold py-2 rounded-md transition-colors duration-200 flex items-center justify-center"
                     >
                       <MessageCircle className="w-3 h-3 mr-1" />
                       WHATSAPP
@@ -326,11 +235,11 @@ export default function SRKBoltHomepage() {
                   </div>
                   <button 
                     onClick={() => {
-                      setRfqProductName(product.name);
-                      setIsRFQPopupOpen(true);
-                      addToRFQ(product.name);
+                      setRfqProductName(product.name)
+                      setIsRFQPopupOpen(true)
+                      addToRFQ(product.name, product.image)
                     }}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200"
+                    className="w-full bg-[#A02222] hover:bg-[#2E1F44] text-white text-xs font-semibold py-2 rounded-md transition-colors duration-200"
                   >
                     ADD TO RFQ
                   </button>
@@ -338,6 +247,7 @@ export default function SRKBoltHomepage() {
               </div>
             ))}
           </div>
+          )}
 
           {/* Visit More Products Button */}
           <div className="text-center">
@@ -355,20 +265,20 @@ export default function SRKBoltHomepage() {
         </div>
       </section>
 
-      {/* Company Statistics Section */}
-      <section className="py-16 bg-gray-100">
+      {/* Company Overview Section */}
+      <section className="py-16 bg-[#F7F7FA]">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-4xl font-bold text-red-600 mb-4">SRK BOLT</h2>
-                <h3 className="text-3xl font-bold text-gray-800 mb-2">
-                  Leading fasteners suppliers in India, Since <span className="text-red-600">1998</span>
+                <h2 className="text-4xl font-bold text-[#A02222] mb-4">SRK BOLT</h2>
+                <h3 className="text-3xl font-bold text-[#2E1F44] mb-2">
+                  Leading fasteners suppliers in India, Since <span className="text-[#A02222]">1998</span>
                 </h3>
               </div>
               
-              <div className="space-y-4 text-gray-700">
+              <div className="space-y-4 text-[rgba(46,31,68,0.85)]">
                 <p>
                   Established in 1998, SRK Bolt started as a trading business dealing in a range of building material items such as nails, machine screws and self-tapping screws.
                 </p>
@@ -383,19 +293,19 @@ export default function SRKBoltHomepage() {
             
             {/* Right Content - Statistics */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-red-600 text-white p-8 rounded-lg text-center">
+              <div className="bg-[#A02222] text-white p-8 rounded-[10px] text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
                 <div className="text-4xl font-bold mb-2">25+</div>
                 <div className="text-sm">Years Industry Experience</div>
               </div>
-              <div className="bg-gray-800 text-white p-8 rounded-lg text-center">
+              <div className="bg-[#2E1F44] text-white p-8 rounded-[10px] text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
                 <div className="text-4xl font-bold mb-2">5k</div>
                 <div className="text-sm">SKU's In Stock</div>
               </div>
-              <div className="bg-gray-800 text-white p-8 rounded-lg text-center">
+              <div className="bg-[#2E1F44] text-white p-8 rounded-[10px] text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
                 <div className="text-4xl font-bold mb-2">50k</div>
                 <div className="text-sm">Sq.ft Warehouse</div>
               </div>
-              <div className="bg-red-600 text-white p-8 rounded-lg text-center">
+              <div className="bg-[#A02222] text-white p-8 rounded-[10px] text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
                 <div className="text-4xl font-bold mb-2">500+</div>
                 <div className="text-sm">Happy Customers</div>
               </div>
@@ -405,19 +315,19 @@ export default function SRKBoltHomepage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-red-600 text-white">
+      <section className="py-16 bg-[#A02222] text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
             <h2 className="text-4xl font-bold mb-4">
               Ready to Experience Quality Fasteners?
             </h2>
-            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+            <p className="text-lg text-white/85 max-w-2xl mx-auto">
               Join hundreds of satisfied customers who trust SRK Bolt for their fastener needs. Contact us now for competitive pricing and reliable supply.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
               <Button
                 size="lg"
-                className="bg-white text-red-600 hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all duration-500 font-bold text-lg px-10 py-6"
+                className="bg-white text-[#A02222] border border-white hover:bg-[#2E1F44] hover:text-white transition-colors duration-300 font-semibold text-lg px-10 py-4 shadow-lg"
               >
                 <a href="/contact" className="flex items-center text-inherit">
                   Get Quote
@@ -427,7 +337,7 @@ export default function SRKBoltHomepage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-red-600 bg-transparent shadow-2xl transform hover:scale-105 transition-all duration-500 font-bold text-lg px-10 py-6"
+                className="border-[1.5px] border-white text-white hover:bg-white hover:text-[#A02222] transition-colors duration-300 font-semibold text-lg px-10 py-4 flex items-center justify-center gap-2"
               >
                 <Phone className="w-5 h-5 mr-2" />
                 Call Now

@@ -3,59 +3,76 @@
 import Link from "next/link"
 import { Search, Phone, MessageCircle, ShoppingCart, Mail } from "lucide-react"
 import { useRFQ } from "@/contexts/RFQContext"
+import Image from "next/image"
+import LogoSRK from "@/public/logoSRK.jpeg"
 
 export default function MainHeader() {
   const { rfqCount, isHydrated } = useRFQ()
 
   return (
-    <header className="bg-white shadow-lg">
-      <div className="container mx-auto px-2 py-1">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-1">
+    <header className="bg-white border-b border-gray-200">
+      <div className="container mx-auto px-2 py-3">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-[#2E1F44]">
           {/* Logo Section */}
           <div className="flex items-center">
             <Link href="/">
-              <img 
-                src="/image-removebg-preview (15).png" 
-                alt="SRK Bolt Logo" 
-                className="h-16 w-auto cursor-pointer"
-              />
+              <div className="h-24 w-64 relative">
+                <Image
+                  src={LogoSRK}
+                  alt="SRK Bolt Logo"
+                  fill
+                  className="object-contain cursor-pointer"
+                  priority
+                />
+              </div>
             </Link>
           </div>
         
           {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4">
+          <div className="flex-1 max-w-md mx-4 w-full">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search model number, product..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-2 border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A02222] placeholder:text-[#777777]"
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#A02222]" />
             </div>
           </div>
                 
           {/* Contact Info */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-green-600">
-              <Phone className="w-5 h-5" />
-              <span className="text-sm font-semibold">+91-9876543210</span>
+          <div className="flex flex-wrap items-center gap-3 text-sm font-semibold">
+            <div className="flex items-center">
+              <span className="bg-[#A02222] hover:bg-[#2E1F44] transition-colors px-3 py-2 rounded-lg flex items-center gap-2 text-white">
+                <Phone className="w-4 h-4" />
+                +971 58 871 3064
+              </span>
             </div>
-            <div className="flex items-center space-x-2 text-green-600">
-              <MessageCircle className="w-5 h-5" />
-              <span className="text-sm">Message Us</span>
-            </div>
-            <Link href="/rfq" className="flex items-center space-x-2 text-red-600 hover:text-red-700 relative cursor-pointer">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="text-sm font-semibold">RFQ List</span>
+            <button
+              onClick={() => {
+                const phoneNumber = "971588713064"
+                const whatsappUrl = `https://wa.me/${phoneNumber}`
+                window.open(whatsappUrl, "_blank")
+              }}
+              className="bg-[#A02222] hover:bg-[#2E1F44] transition-colors px-3 py-2 rounded-lg flex items-center gap-2 text-white"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Message Us
+            </button>
+            <Link href="/rfq" className="relative">
+              <span className="bg-[#A02222] hover:bg-[#2E1F44] transition-colors px-3 py-2 rounded-lg flex items-center gap-2 text-white">
+                <ShoppingCart className="w-4 h-4" />
+                RFQ List
+              </span>
               {isHydrated && rfqCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-[#FFD5D5] text-[#A02222] text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                   {rfqCount}
                 </span>
               )}
             </Link>
-            <div className="flex items-center space-x-2 text-red-600">
-              <Mail className="w-5 h-5" />
-              <span className="text-sm">sales@srkbolt.com</span>
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4 text-[#A02222]" />
+              <span className="text-sm font-medium text-[#2E1F44]">sales@srkbolts.com</span>
             </div>
           </div>
         </div>

@@ -229,10 +229,10 @@ export default function CareersPage() {
                   <ArrowRight className="w-5 h-5" />
                 </a>
                 <a
-                  href="tel:+91-9876543210"
+                  href="tel:+971588713064"
                   className="inline-flex items-center justify-center gap-2 border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-red-600 font-bold transition-all transform hover:scale-105"
                 >
-                  +91-9876543210
+                  +971 58 871 3064
                   <ArrowRight className="w-5 h-5" />
                 </a>
               </div>

@@ -240,9 +240,9 @@ export default function OrderConfirmationPage() {
                     <span>Subtotal</span>
                     <span>₹{(orderData.total - 749 - (orderData.total * 0.08)).toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between text-primary">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Shipping</span>
-                    <span>₹749</span>
+                    <span>To be discussed</span>
                   </div>
                   <div className="flex justify-between text-primary">
                     <span>Tax</span>

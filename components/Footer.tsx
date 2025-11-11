@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { Phone, Mail, MapPin, Clock, Facebook, Twitter, Linkedin, Instagram } from "lucide-react"
+import Image from "next/image"
+import LogoSRK from "@/public/logoSRK.jpeg"
 
 export default function Footer() {
   return (
-    <footer className="bg-white text-gray-800">
+    <footer className="bg-[#2E1F44] text-white">
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -11,69 +13,72 @@ export default function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <img 
-                src="/image-removebg-preview (15).png" 
+              <div className="relative h-20 w-60">
+                <Image
+                  src={LogoSRK}
                 alt="SRK Bolt Logo" 
-                className="h-12 w-auto"
+                  fill
+                  className="object-contain"
               />
+              </div>
             </div>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-white/70 text-sm leading-relaxed">
               Leading manufacturer and supplier of high-quality fasteners serving industries 
               across India and internationally since 1998. Your trusted partner for all 
               fastener solutions.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-500 hover:text-red-600 transition-colors">
-                <Facebook className="w-5 h-5" />
+              <a href="#" className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-[#FFD5D5]">
+                <Facebook className="w-4 h-4 text-[#A02222]" />
               </a>
-              <a href="#" className="text-gray-500 hover:text-red-600 transition-colors">
-                <Twitter className="w-5 h-5" />
+              <a href="#" className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-[#FFD5D5]">
+                <Twitter className="w-4 h-4 text-[#A02222]" />
               </a>
-              <a href="#" className="text-gray-500 hover:text-red-600 transition-colors">
-                <Linkedin className="w-5 h-5" />
+              <a href="#" className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-[#FFD5D5]">
+                <Linkedin className="w-4 h-4 text-[#A02222]" />
               </a>
-              <a href="#" className="text-gray-500 hover:text-red-600 transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a href="#" className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-colors hover:bg-[#FFD5D5]">
+                <Instagram className="w-4 h-4 text-[#A02222]" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Quick Links</h4>
+            <h4 className="text-lg font-semibold text-white">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/about" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/products" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   All Products
                 </Link>
               </li>
               <li>
-                <Link href="/bolts" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/bolts" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Bolts
                 </Link>
               </li>
               <li>
-                <Link href="/nuts" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/nuts" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Nuts
                 </Link>
               </li>
               <li>
-                <Link href="/washers" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/washers" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Washers
                 </Link>
               </li>
               <li>
-                <Link href="/screws" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/screws" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Screws
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/contact" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Contact Us
                 </Link>
               </li>
@@ -82,40 +87,40 @@ export default function Footer() {
 
           {/* Product Categories */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Product Categories</h4>
+            <h4 className="text-lg font-semibold text-white">Product Categories</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/hook-eye" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/hook-eye" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Hook & Eye Products
                 </Link>
               </li>
               <li>
-                <Link href="/rivets" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/rivets" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Rivets, Pin & Inserts
                 </Link>
               </li>
               <li>
-                <Link href="/attachments" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/attachments" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Heavy Load Attachments
                 </Link>
               </li>
               <li>
-                <Link href="/other" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/other" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Other Products
                 </Link>
               </li>
               <li>
-                <Link href="/industries" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/industries" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Industries We Serve
                 </Link>
               </li>
               <li>
-                <Link href="/projects" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/projects" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Major Projects
                 </Link>
               </li>
               <li>
-                <Link href="/brands" className="text-gray-600 hover:text-red-600 transition-colors text-sm">
+                <Link href="/brands" className="text-white/85 hover:text-[#A02222] transition-colors text-sm">
                   Our Brands
                 </Link>
               </li>
@@ -124,12 +129,12 @@ export default function Footer() {
 
           {/* Contact Information */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Contact Information</h4>
+            <h4 className="text-lg font-semibold text-white">Contact Information</h4>
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                <MapPin className="w-5 h-5 text-[#FFD5D5] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-white/80 text-sm">
                     SRK Bolt Industries<br />
                     Industrial Area, Phase 1<br />
                     Mumbai, Maharashtra 400001<br />
@@ -139,25 +144,23 @@ export default function Footer() {
               </div>
               
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-red-600 shrink-0" />
+                <Phone className="w-5 h-5 text-[#FFD5D5] shrink-0" />
                 <div>
-                  <p className="text-gray-600 text-sm">+91-9876543210</p>
-                  <p className="text-gray-600 text-sm">+91-9876543211</p>
+                  <p className="text-white/80 text-sm">+971 58 871 3064</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-red-600 shrink-0" />
+                <Mail className="w-5 h-5 text-[#FFD5D5] shrink-0" />
                 <div>
-                  <p className="text-gray-600 text-sm">sales@srkbolt.com</p>
-                  <p className="text-gray-600 text-sm">info@srkbolt.com</p>
+                  <p className="text-white/80 text-sm">sales@srkbolts.com</p>
                 </div>
               </div>
               
               <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                <Clock className="w-5 h-5 text-[#FFD5D5] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-white/80 text-sm">
                     Mon - Fri: 9:00 AM - 6:00 PM<br />
                     Sat: 9:00 AM - 2:00 PM<br />
                     Sun: Closed
@@ -170,20 +173,20 @@ export default function Footer() {
       </div>
 
       {/* Bottom Footer */}
-      <div className="border-t border-gray-200">
+      <div className="border-t border-[#25183A] bg-[#25183A]">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-gray-500 text-sm">
+            <div className="text-[#CCCCCC] text-sm">
               © 2024 SRK Bolt Industries. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
-              <Link href="/privacy" className="text-gray-500 hover:text-red-600 transition-colors">
+              <Link href="/privacy" className="text-white/70 hover:text-[#A02222] transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-gray-500 hover:text-red-600 transition-colors">
+              <Link href="/terms" className="text-white/70 hover:text-[#A02222] transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/sitemap" className="text-gray-500 hover:text-red-600 transition-colors">
+              <Link href="/sitemap" className="text-white/70 hover:text-[#A02222] transition-colors">
                 Sitemap
               </Link>
             </div>

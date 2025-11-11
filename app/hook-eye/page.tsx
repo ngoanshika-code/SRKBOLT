@@ -2,8 +2,9 @@
 
 import Layout from "@/components/Layout"
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, ExternalLink, Link, Settings, Factory, MessageCircle, FileText, CheckCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, Link, Settings, Factory, MessageCircle, FileText, CheckCircle, Shield } from "lucide-react"
 import { useRFQ } from "@/contexts/RFQContext"
+import { useCategoryProducts } from "@/hooks/useCategoryProducts"
 
 export default function HookEyePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -49,74 +50,21 @@ export default function HookEyePage() {
 
   // Function to generate WhatsApp URL with product information
   const handleWhatsAppClick = (product: { name: string; category: string }) => {
-    const phoneNumber = "919321362064" // WhatsApp number with country code
+    const phoneNumber = "971588713064" // WhatsApp number with country code
     const message = `Hello! I'm interested in this product:\n\nProduct Name: ${product.name}\nCategory: ${product.category}\n\nPlease provide more information about this product.`
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
-
-  // Hook & Eye product data
-  const hookEyeProducts = [
-    {
-      id: 1,
-      name: "Eye Bolts",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Heavy-duty eye bolts for lifting applications",
-      price: "₹45.50",
-      category: "HOOK & EYE",
-      inStock: true
-    },
-    {
-      id: 2,
-      name: "Lifting Hooks",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Safety hooks for crane and hoist operations",
-      price: "₹65.75",
-      category: "HOOK & EYE",
-      inStock: true
-    },
-    {
-      id: 3,
-      name: "Shackles",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Bow and D-shackles for rigging applications",
-      price: "₹85.20",
-      category: "HOOK & EYE",
-      inStock: true
-    },
-    {
-      id: 4,
-      name: "Turnbuckles",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Adjustable turnbuckles for tensioning",
-      price: "₹125.80",
-      category: "HOOK & EYE",
-      inStock: true
-    },
-    {
-      id: 5,
-      name: "Wire Rope Clips",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Wire rope clips for cable termination",
-      price: "₹35.90",
-      category: "HOOK & EYE",
-      inStock: true
-    },
-    {
-      id: 6,
-      name: "Swivel Hooks",
-      image: "https://www.husainibrothers.com/cdn/images/200/5921504842_1635755736.jpg",
-      description: "Swivel hooks to prevent cable twisting",
-      price: "₹75.60",
-      category: "HOOK & EYE",
-      inStock: true
-    }
-  ]
+  const {
+    products: hookEyeProducts,
+    loading: hookEyeLoading,
+    error: hookEyeError,
+  } = useCategoryProducts("HOOK & EYE")
 
   return (
     <Layout>
       {/* Hero Section - Image Slider */}
-      <section className="relative h-screen overflow-hidden">
+      <section className="relative h-96 overflow-hidden">
         {/* Slides */}
         <div 
           className="flex transition-transform duration-500 ease-in-out h-full"
@@ -176,66 +124,59 @@ export default function HookEyePage() {
       </section>
 
       {/* Hook & Eye Content */}
+      <div className="bg-[#F7F7FA]">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">Hook & Eye Products</h1>
-            <p className="text-gray-600 text-xl max-w-4xl mx-auto leading-relaxed">
-              Discover our comprehensive range of hook and eye products designed for lifting, rigging, 
-              and load handling applications. From eye bolts to shackles, we provide professional-grade 
-              hardware for safe and reliable operations.
+            <h1 className="text-4xl font-bold text-[#2E1F44] mb-6">Hook & Eye Products</h1>
+            <p className="text-[rgba(46,31,68,0.85)] text-xl max-w-4xl mx-auto leading-relaxed">
+              Explore our range of hook and eye fasteners engineered for marine, industrial, and architectural applications.
             </p>
           </div>
+
+          {hookEyeError && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {hookEyeError}
+            </div>
+          )}
+          {hookEyeLoading && (
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              Loading latest hook & eye products from inventory...
+            </div>
+          )}
           
           {/* Product Grid */}
+          {(!hookEyeLoading && hookEyeProducts.length === 0) ? (
+            <div className="mb-16 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-gray-500">
+              No hook & eye products are currently available. Add new products from the admin dashboard to populate this collection.
+            </div>
+          ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {hookEyeProducts.map((product) => (
-              <div key={product.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                <div className="relative h-64 overflow-hidden">
+              <div key={product.id} className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-3">
+                <div className="w-full aspect-square bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="max-h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="text-2xl font-bold mb-1">{product.name}</h3>
-                    <p className="text-gray-200">{product.price}</p>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-semibold">HOOK & EYE</span>
-                  </div>
                 </div>
-                <div className="p-6">
-                  <h4 className="text-xl font-semibold text-gray-800 mb-3">{product.name}</h4>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Link className="w-4 h-4 mr-1" />
-                      <span>Lifting</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      <span>Rigging</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
+                <h4 className="text-base font-semibold text-[#2E1F44]">{product.name}</h4>
+                <div className="w-full space-y-2.5">
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=HOOK & EYE`}
-                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200 flex items-center justify-center"
+                      onClick={() => window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=HOOK%20&%20EYE%20PRODUCTS`}
+                      className="flex-1 border border-[#2E1F44] text-[#2E1F44] text-xs font-semibold py-1.5 rounded-md transition-colors duration-200 flex items-center justify-center gap-1 hover:bg-[#A02222] hover:text-white hover:border-[#A02222]"
                       >
-                        <FileText className="w-3 h-3 mr-1" />
+                      <FileText className="w-3 h-3" />
                         VIEW-DETAIL
                       </button>
                       <button 
                         onClick={() => handleWhatsAppClick(product)}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200 flex items-center justify-center"
+                      className="flex-1 bg-[#25D366] hover:bg-[#1ebe5a] text-white text-xs font-semibold py-1.5 rounded-md transition-colors duration-200 flex items-center justify-center gap-1"
                       >
-                        <MessageCircle className="w-3 h-3 mr-1" />
+                      <MessageCircle className="w-3 h-3" />
                         WHATSAPP
                       </button>
                     </div>
@@ -245,51 +186,52 @@ export default function HookEyePage() {
                         setIsRFQPopupOpen(true);
                         addToRFQ(product.name, product.image);
                       }}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors duration-200"
+                    className="w-full bg-[#A02222] hover:bg-[#2E1F44] text-white text-xs font-semibold py-1.5 rounded-md transition-colors duration-200"
                     >
                       ADD TO RFQ
                     </button>
-                  </div>
                 </div>
               </div>
             ))}
           </div>
+          )}
 
           {/* Features Section */}
-          <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-12 mb-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">Why Choose Our Hook & Eye Products?</h2>
+          <div className="bg-white rounded-2xl p-12 shadow-[0_2px_8px_rgba(0,0,0,0.08)] mb-16">
+            <h2 className="text-3xl font-bold text-[#2E1F44] mb-12 text-center">Why Choose Our Hook & Eye Products?</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="bg-white rounded-xl p-8 shadow-lg">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Link className="w-8 h-8 text-orange-600" />
+                <div className="bg-[#F7F7FA] rounded-xl p-8 shadow-sm">
+                  <div className="w-16 h-16 bg-[#A02222]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-[#A02222]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Safety Certified</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    All products meet international safety standards for lifting and rigging applications.
+                  <h3 className="text-xl font-semibold text-[#2E1F44] mb-3">Marine Grade</h3>
+                  <p className="text-[rgba(46,31,68,0.85)] text-sm leading-relaxed">
+                    Corrosion-resistant materials suitable for marine environments and harsh weather conditions.
                   </p>
                 </div>
               </div>
               <div className="text-center">
-                <div className="bg-white rounded-xl p-8 shadow-lg">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Settings className="w-8 h-8 text-orange-600" />
+                <div className="bg-[#F7F7FA] rounded-xl p-8 shadow-sm">
+                  <div className="w-16 h-16 bg-[#A02222]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Settings className="w-8 h-8 text-[#A02222]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Heavy Duty</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Designed for high-load applications with superior strength and durability.
+                  <h3 className="text-xl font-semibold text-[#2E1F44] mb-3">Secure Fastening</h3>
+                  <p className="text-[rgba(46,31,68,0.85)] text-sm leading-relaxed">
+                    Provides reliable fastening solutions for lifting, rigging, and architectural applications.
                   </p>
                 </div>
               </div>
               <div className="text-center">
-                <div className="bg-white rounded-xl p-8 shadow-lg">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Factory className="w-8 h-8 text-orange-600" />
+                <div className="bg-[#F7F7FA] rounded-xl p-8 shadow-sm">
+                  <div className="w-16 h-16 bg-[#A02222]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Factory className="w-8 h-8 text-[#A02222]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Professional Grade</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Used by professionals in construction, manufacturing, and industrial applications.
+                  <h3 className="text-xl font-semibold text-[#2E1F44] mb-3">Engineered Durability</h3>
+                  <p className="text-[rgba(46,31,68,0.85)] text-sm leading-relaxed">
+                    Manufactured to withstand heavy loads and repeated use without compromising safety.
                   </p>
+                </div>
                 </div>
               </div>
             </div>
@@ -298,23 +240,20 @@ export default function HookEyePage() {
       </div>
 
       {/* Call to Action */}
-      <section className="bg-red-600 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Need Custom Lifting Hardware?
-            </h2>
-            <p className="text-lg mb-8 max-w-2xl mx-auto">
-              Contact our technical team for custom hook and eye specifications and bulk orders. 
-              We provide tailored lifting solutions for your specific load handling requirements.
+      <section className="py-16 bg-[#A02222] text-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <h2 className="text-3xl md:text-4xl font-bold">Need Custom Hook & Eye Solutions?</h2>
+            <p className="text-lg text-white/85 max-w-2xl mx-auto">
+              Contact our specialists for custom hook and eye fasteners tailored to your marine or industrial projects.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center">
-                <ExternalLink className="w-5 h-5 mr-2" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+              <button className="bg-white text-[#A02222] border border-white hover:bg-[#2E1F44] hover:text-white transition-colors duration-300 font-semibold px-8 py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg">
+                <ExternalLink className="w-5 h-5" />
                 Get Custom Quote
               </button>
-              <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-600 transition-colors flex items-center justify-center">
-                <ExternalLink className="w-5 h-5 mr-2" />
+              <button className="border-[1.5px] border-white text-white hover:bg-white hover:text-[#A02222] transition-colors duration-300 font-semibold px-8 py-3 rounded-lg flex items-center justify-center gap-2">
+                <ExternalLink className="w-5 h-5" />
                 Contact Us
               </button>
             </div>

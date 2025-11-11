@@ -6,7 +6,9 @@ export interface HusainiProduct {
   name: string
   category: string
   image: string
+  images?: string[]
   standard?: string
+  equivalentStandard?: string
   material?: string
   grades?: string[]
   sizes?: string
@@ -16,6 +18,7 @@ export interface HusainiProduct {
   uses: string[]
   specifications: {
     standard?: string
+    equivalentStandard?: string
     material?: string
     grades?: string[]
     sizes?: string

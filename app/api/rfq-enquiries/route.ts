@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCollection } from '@/lib/mongodb'
+import { sendNotificationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,10 +50,37 @@ export async function POST(request: NextRequest) {
 
     const result = await collection.insertOne(enquiryRecord)
 
+    const productsList = enquiryRecord.products
+      .map((product: any, index: number) => `
+        <li>
+          <strong>${index + 1}. ${product.name}</strong><br />
+          Quantity: ${product.quantity || 1}
+        </li>
+      `)
+      .join('')
+
+    await sendNotificationEmail({
+      subject: `New RFQ Enquiry – ${enquiryRecord.fullName}`,
+      html: `
+        <h2>New RFQ Request</h2>
+        <p><strong>Name:</strong> ${enquiryRecord.fullName}</p>
+        <p><strong>Email:</strong> ${enquiryRecord.email}</p>
+        <p><strong>Phone:</strong> ${enquiryRecord.mobileNumber}</p>
+        <p><strong>Company:</strong> ${enquiryRecord.companyName || 'N/A'}</p>
+        <p><strong>Address:</strong> ${enquiryRecord.address}</p>
+        <p><strong>City / Country:</strong> ${enquiryRecord.city || 'N/A'} / ${enquiryRecord.country || 'N/A'}</p>
+        <p><strong>Notes:</strong> ${enquiryRecord.comments || '—'}</p>
+        <h3>Products Requested</h3>
+        <ul>${productsList}</ul>
+        <p>Total Items: ${enquiryRecord.totalItems}</p>
+        <p>This enquiry was submitted on ${new Date().toLocaleString()}.</p>
+      `,
+    })
+
     return NextResponse.json(
-      { 
+      {
         message: 'RFQ enquiry submitted successfully',
-        id: result.insertedId 
+        id: result.insertedId,
       },
       { status: 201 }
     )
