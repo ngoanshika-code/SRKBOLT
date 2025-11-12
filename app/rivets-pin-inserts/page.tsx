@@ -153,18 +153,18 @@ export default function RivetsPinInsertsPage() {
               No rivets, pins, or inserts are currently available. Add new products from the admin dashboard to populate this collection.
             </div>
           ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {rivetsProducts.map((product) => (
-              <div key={product.id} className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-3">
-                <div className="w-full aspect-square bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+              <div key={product.id} className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-5 flex flex-col items-center text-center gap-3 h-full">
+                <div className="w-full h-40 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="max-h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-h-24 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <h4 className="text-base font-semibold text-[#2E1F44]">{product.name}</h4>
-                <div className="w-full space-y-2.5">
+                <div className="w-full space-y-2.5 mt-auto">
                     <div className="flex gap-2">
                       <button 
                       onClick={() => window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=RIVETS,%20PIN%20%26%20INSERTS`}
