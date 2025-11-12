@@ -36,6 +36,9 @@ import {
   Briefcase,
   CheckCircle,
   BookOpen,
+  Inbox,
+  LinkIcon,
+  ArrowRight,
 } from "lucide-react"
 
 interface Product {
@@ -117,6 +120,20 @@ const emptyOpeningForm = {
   gradient: "from-red-500 to-red-600",
 }
 
+interface ApplicationRecord {
+  _id?: string
+  name: string
+  email: string
+  phone: string
+  resumeUrl: string
+  openingId?: string
+  openingTitle?: string
+  employmentType?: string
+  location?: string
+  coverLetter?: string
+  createdAt?: string
+}
+
 const MAX_BANNER_COUNT = 3
 
 type BannerSlideForm = {
@@ -166,6 +183,9 @@ export default function AdminDashboard() {
   const [submittingOpening, setSubmittingOpening] = useState(false)
   const [editingOpening, setEditingOpening] = useState<Opening | null>(null)
   const [openingForm, setOpeningForm] = useState(emptyOpeningForm)
+  const [applications, setApplications] = useState<ApplicationRecord[]>([])
+  const [loadingApplications, setLoadingApplications] = useState(false)
+  const [submittingApplication, setSubmittingApplication] = useState(false)
   const [banners, setBanners] = useState<Banner[]>([])
   const [loadingBanners, setLoadingBanners] = useState(false)
   const [submittingBanner, setSubmittingBanner] = useState(false)
@@ -278,6 +298,7 @@ export default function AdminDashboard() {
         fetchDataSheetDownloads()
         fetchRFQEnquiries()
         fetchBlogs()
+        fetchApplications()
         fetchOpenings()
         fetchBanners()
       } else {
@@ -379,6 +400,31 @@ export default function AdminDashboard() {
       })
     } finally {
       setLoadingOpenings(false)
+    }
+  }
+
+  const fetchApplications = async () => {
+    try {
+      setLoadingApplications(true)
+      const response = await fetch("/api/applications")
+      if (!response.ok) {
+        throw new Error("Failed to fetch applications")
+      }
+      const data = await response.json()
+      const normalised = (Array.isArray(data) ? data : []).map((application: any) => ({
+        ...application,
+        _id: typeof application._id === "string" ? application._id : application._id?.$oid ?? "",
+      }))
+      setApplications(normalised)
+    } catch (error) {
+      console.error("Error fetching applications:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch job applications",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingApplications(false)
     }
   }
 
@@ -541,6 +587,38 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete opening",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteApplication = async (applicationId?: string) => {
+    if (!applicationId) return
+    const confirmed = confirm("Delete this application?")
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/applications/${applicationId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete application")
+      }
+
+      toast({
+        title: "Application removed",
+        description: "The application has been deleted.",
+        variant: "success",
+      })
+
+      fetchApplications()
+    } catch (error) {
+      console.error("Error deleting application:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete application",
         variant: "destructive",
       })
     }
@@ -1544,7 +1622,7 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="add-product" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Product
@@ -1560,6 +1638,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="rfq-enquiries" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               RFQ Enquiries
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              Applications
             </TabsTrigger>
             <TabsTrigger value="openings" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
@@ -3109,6 +3191,95 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Applications Tab */}
+          <TabsContent value="applications">
+            <Card className="bg-white shadow-md">
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Inbox className="h-5 w-5" />
+                    Job Applications
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">Review and export submissions received from the careers page.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={fetchApplications} disabled={loadingApplications}>
+                  <Loader2 className={`h-4 w-4 mr-2 ${loadingApplications ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {loadingApplications ? (
+                  <div className="flex items-center justify-center py-10 text-gray-500">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    Loading applications...
+                  </div>
+                ) : applications.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500 border border-dashed border-gray-200 rounded-xl">
+                    No applications received yet. Completed forms on the careers page will appear here.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {applications.map((application) => (
+                      <div key={application._id} className="border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-semibold text-[#2E1F44]">{application.name}</h3>
+                            <div className="flex flex-wrap gap-4 text-sm text-[#2E1F44]/70">
+                              <span className="flex items-center gap-2">
+                                <LinkIcon className="h-4 w-4" />
+                                <a
+                                  href={`mailto:${application.email}`}
+                                  className="text-[#A02222] hover:underline"
+                                >
+                                  {application.email}
+                                </a>
+                              </span>
+                              <span>{application.phone}</span>
+                              {application.location && <span>{application.location}</span>}
+                            </div>
+                            {application.openingTitle && (
+                              <p className="text-xs uppercase tracking-[0.3em] text-[#A02222] font-semibold">
+                                Applied For: {application.openingTitle}
+                              </p>
+                            )}
+                            {application.employmentType && (
+                              <Badge variant="outline" className="text-xs">
+                                {application.employmentType}
+                              </Badge>
+                            )}
+                            <div className="flex items-center gap-3 text-sm">
+                              <a
+                                href={application.resumeUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-2 text-[#A02222] hover:text-[#2E1F44] font-semibold"
+                              >
+                                View CV
+                                <ArrowRight className="h-4 w-4" />
+                              </a>
+                              <span className="text-[#2E1F44]/60">
+                                Submitted {application.createdAt ? new Date(application.createdAt).toLocaleString("en-IN") : "recently"}
+                              </span>
+                            </div>
+                            {application.coverLetter && (
+                              <p className="text-sm text-[#2E1F44]/60 leading-relaxed">{application.coverLetter}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteApplication(application._id)}>
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

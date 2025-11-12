@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout"
 import { getCollection } from "@/lib/mongodb"
+import { JobOpeningsGrid } from "@/components/careers/JobOpenings"
 import { Briefcase, Users, TrendingUp, BookOpen, ArrowRight, CheckCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -79,6 +80,15 @@ async function fetchOpenings(): Promise<Opening[]> {
 export default async function CareersPage() {
   const jobOpenings = await fetchOpenings()
 
+  const openingsForClient = jobOpenings.map((opening) => {
+    const IconComponent = iconMap[opening.icon ?? "briefcase"] || Briefcase
+    return {
+      ...opening,
+      iconElement: <IconComponent className="w-6 h-6" />,
+      gradient: opening.gradient ?? DEFAULT_GRADIENT,
+    }
+  })
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -115,62 +125,7 @@ export default async function CareersPage() {
                 <p className="text-gray-600 text-lg mt-4">Find the perfect role for your career</p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
-                {jobOpenings.length === 0 ? (
-                  <div className="md:col-span-2 text-center py-12 border border-dashed border-gray-200 rounded-2xl">
-                    <h3 className="text-xl font-semibold text-gray-700">No openings available right now</h3>
-                    <p className="mt-2 text-gray-500">
-                      We&apos;re not actively hiring for new roles. Check back soon or drop us your CV at{' '}
-                      <a href="mailto:careers@srkbolt.com" className="text-[#A02222] font-semibold">
-                        careers@srkbolt.com
-                      </a>
-                      .
-                    </p>
-                  </div>
-                ) : (
-                  jobOpenings.map((job) => {
-                    const IconComponent = iconMap[job.icon ?? "briefcase"] || Briefcase
-                    const gradient = job.gradient ?? DEFAULT_GRADIENT
-
-                    return (
-                      <div
-                        key={job.id}
-                        className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-red-200 transform hover:-translate-y-2"
-                      >
-                        <div className={`h-1 bg-linear-to-r ${gradient}`}></div>
-                        <div className="p-8">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className={`p-3 rounded-lg bg-linear-to-br ${gradient} text-white`}>
-                              <IconComponent className="w-6 h-6" />
-                            </div>
-                            <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-semibold">
-                              {job.employmentType}
-                            </span>
-                          </div>
-
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">{job.title}</h3>
-                          <p className="text-gray-600 mb-6 line-clamp-2">{job.description}</p>
-
-                          <div className="flex gap-4 mb-6">
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-500 font-semibold">LOCATION</p>
-                              <p className="text-gray-900 font-semibold">{job.location}</p>
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-500 font-semibold">EXPERIENCE</p>
-                              <p className="text-gray-900 font-semibold">{job.experience}</p>
-                            </div>
-                          </div>
-
-                          <button className="w-full bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-semibold transition-all transform hover:scale-105">
-                            Apply Now
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
+              <JobOpeningsGrid openings={openingsForClient} />
             </div>
           </div>
         </section>
