@@ -242,7 +242,7 @@ export default function MainHeader() {
                       {searchError ?? "No matching products found. Try refining your search."}
                     </p>
                   )}
-                </div>
+            </div>
               )}
             </form>
           </div>
