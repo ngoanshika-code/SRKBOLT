@@ -14,12 +14,12 @@ import TopBar from "@/components/TopBar"
 import MainHeader from "@/components/MainHeader"
 import Footer from "@/components/Footer"
 import { useToast } from "@/contexts/ToastContext"
-import { 
-  Plus, 
-  Package, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Plus,
+  Package,
+  Edit,
+  Trash2,
+  Eye,
   Upload,
   Save,
   X,
@@ -33,6 +33,9 @@ import {
   Download,
   FileText,
   Images,
+  Briefcase,
+  CheckCircle,
+  BookOpen,
 } from "lucide-react"
 
 interface Product {
@@ -91,6 +94,29 @@ const emptyBlogForm = {
   category: "",
 }
 
+interface Opening {
+  _id?: string
+  title: string
+  employmentType: string
+  location: string
+  experience: string
+  description: string
+  icon?: string
+  gradient?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+const emptyOpeningForm = {
+  title: "",
+  employmentType: "Full-time",
+  location: "",
+  experience: "",
+  description: "",
+  icon: "briefcase",
+  gradient: "from-red-500 to-red-600",
+}
+
 const MAX_BANNER_COUNT = 3
 
 type BannerSlideForm = {
@@ -135,6 +161,11 @@ export default function AdminDashboard() {
   const [submittingBlog, setSubmittingBlog] = useState(false)
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null)
   const [blogForm, setBlogForm] = useState(emptyBlogForm)
+  const [openings, setOpenings] = useState<Opening[]>([])
+  const [loadingOpenings, setLoadingOpenings] = useState(false)
+  const [submittingOpening, setSubmittingOpening] = useState(false)
+  const [editingOpening, setEditingOpening] = useState<Opening | null>(null)
+  const [openingForm, setOpeningForm] = useState(emptyOpeningForm)
   const [banners, setBanners] = useState<Banner[]>([])
   const [loadingBanners, setLoadingBanners] = useState(false)
   const [submittingBanner, setSubmittingBanner] = useState(false)
@@ -194,6 +225,30 @@ export default function AdminDashboard() {
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
   const MAX_IMAGES = 3
 
+  const iconChoices: Array<{ value: string; label: string }> = [
+    { value: "briefcase", label: "Briefcase" },
+    { value: "check-circle", label: "Check Circle" },
+    { value: "trending-up", label: "Trending Up" },
+    { value: "users", label: "Users" },
+    { value: "book-open", label: "Book Open" },
+  ]
+
+  const iconComponentMap: Record<string, typeof Briefcase> = {
+    briefcase: Briefcase,
+    "check-circle": CheckCircle,
+    "trending-up": TrendingUp,
+    users: Users,
+    "book-open": BookOpen,
+  }
+
+  const gradientChoices: Array<{ value: string; label: string }> = [
+    { value: "from-red-500 to-red-600", label: "Ruby" },
+    { value: "from-orange-500 to-red-500", label: "Sunset" },
+    { value: "from-amber-500 to-orange-500", label: "Amber" },
+    { value: "from-indigo-500 to-blue-500", label: "Indigo" },
+    { value: "from-emerald-500 to-teal-500", label: "Emerald" },
+  ]
+
   const currentImageLinks = editingProduct ? editFormData.imageLinks : formData.imageLinks
   const sanitizedManualLinks = (currentImageLinks || [])
     .map((url) => (typeof url === 'string' ? url.trim() : ''))
@@ -223,6 +278,7 @@ export default function AdminDashboard() {
         fetchDataSheetDownloads()
         fetchRFQEnquiries()
         fetchBlogs()
+        fetchOpenings()
         fetchBanners()
       } else {
         // Session expired
@@ -301,6 +357,31 @@ export default function AdminDashboard() {
     }
   }
 
+  const fetchOpenings = async () => {
+    try {
+      setLoadingOpenings(true)
+      const response = await fetch("/api/openings")
+      if (!response.ok) {
+        throw new Error("Failed to fetch openings")
+      }
+      const data = await response.json()
+      const normalised = (Array.isArray(data) ? data : []).map((opening: any) => ({
+        ...opening,
+        _id: typeof opening._id === "string" ? opening._id : opening._id?.$oid ?? "",
+      }))
+      setOpenings(normalised)
+    } catch (error) {
+      console.error("Error fetching openings:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch current openings",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingOpenings(false)
+    }
+  }
+
   const fetchBanners = async () => {
     try {
       setLoadingBanners(true)
@@ -341,6 +422,128 @@ export default function AdminDashboard() {
         slideIndex === index ? { ...slide, [field]: value } : slide
       ),
     }))
+  }
+
+  const handleOpeningInputChange = (field: keyof typeof emptyOpeningForm, value: string) => {
+    setOpeningForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleOpeningSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const payload = {
+      title: openingForm.title.trim(),
+      employmentType: openingForm.employmentType.trim(),
+      location: openingForm.location.trim(),
+      experience: openingForm.experience.trim(),
+      description: openingForm.description.trim(),
+      icon: openingForm.icon,
+      gradient: openingForm.gradient,
+    }
+
+    if (!payload.title || !payload.location || !payload.experience || !payload.description) {
+      toast({
+        title: "Missing fields",
+        description: "Title, location, experience, and description are required.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setSubmittingOpening(true)
+
+      const endpoint = editingOpening ? `/api/openings/${editingOpening._id}` : "/api/openings"
+      const method = editingOpening ? "PUT" : "POST"
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to save opening")
+      }
+
+      toast({
+        title: editingOpening ? "Opening updated" : "Opening added",
+        description: editingOpening
+          ? "The job opening has been updated successfully."
+          : "New job opening created successfully.",
+        variant: "success",
+      })
+
+      setOpeningForm(emptyOpeningForm)
+      setEditingOpening(null)
+      fetchOpenings()
+    } catch (error) {
+      console.error("Error saving opening:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save opening",
+        variant: "destructive",
+      })
+    } finally {
+      setSubmittingOpening(false)
+    }
+  }
+
+  const handleEditOpening = (opening: Opening) => {
+    setEditingOpening(opening)
+    setOpeningForm({
+      title: opening.title || "",
+      employmentType: opening.employmentType || "Full-time",
+      location: opening.location || "",
+      experience: opening.experience || "",
+      description: opening.description || "",
+      icon: opening.icon || "briefcase",
+      gradient: opening.gradient || "from-red-500 to-red-600",
+    })
+    setActiveTab("openings")
+  }
+
+  const cancelOpeningEdit = () => {
+    setEditingOpening(null)
+    setOpeningForm(emptyOpeningForm)
+  }
+
+  const handleDeleteOpening = async (openingId?: string) => {
+    if (!openingId) return
+    const confirmed = confirm("Are you sure you want to delete this opening?")
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/openings/${openingId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete opening")
+      }
+
+      toast({
+        title: "Opening deleted",
+        description: "The job opening has been removed.",
+        variant: "success",
+      })
+
+      fetchOpenings()
+    } catch (error) {
+      console.error("Error deleting opening:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete opening",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleBannerSubmit = async (e: React.FormEvent) => {
@@ -1341,7 +1544,7 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="add-product" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Product
@@ -1357,6 +1560,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="rfq-enquiries" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               RFQ Enquiries
+            </TabsTrigger>
+            <TabsTrigger value="openings" className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Current Openings
             </TabsTrigger>
             <TabsTrigger value="banners" className="flex items-center gap-2">
               <Images className="h-4 w-4" />
@@ -2276,6 +2483,232 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Current Openings Tab */}
+          <TabsContent value="openings">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="bg-white shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {editingOpening ? (
+                      <>
+                        <Edit className="h-5 w-5" />
+                        Edit Opening: {editingOpening.title}
+                      </>
+                    ) : (
+                      <>
+                        <Briefcase className="h-5 w-5" />
+                        Add Job Opening
+                      </>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleOpeningSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="opening-title">Job Title</Label>
+                      <Input
+                        id="opening-title"
+                        value={openingForm.title}
+                        onChange={(e) => handleOpeningInputChange("title", e.target.value)}
+                        placeholder="e.g., Sales Manager"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="opening-type">Employment Type</Label>
+                        <Select
+                          value={openingForm.employmentType}
+                          onValueChange={(value) => handleOpeningInputChange("employmentType", value)}
+                        >
+                          <SelectTrigger id="opening-type">
+                            <SelectValue placeholder="Select employment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Full-time">Full-time</SelectItem>
+                            <SelectItem value="Part-time">Part-time</SelectItem>
+                            <SelectItem value="Contract">Contract</SelectItem>
+                            <SelectItem value="Internship">Internship</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="opening-location">Location</Label>
+                        <Input
+                          id="opening-location"
+                          value={openingForm.location}
+                          onChange={(e) => handleOpeningInputChange("location", e.target.value)}
+                          placeholder="e.g., Mumbai"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="opening-experience">Experience</Label>
+                        <Input
+                          id="opening-experience"
+                          value={openingForm.experience}
+                          onChange={(e) => handleOpeningInputChange("experience", e.target.value)}
+                          placeholder="e.g., 5+ years"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="opening-icon">Icon</Label>
+                        <Select
+                          value={openingForm.icon}
+                          onValueChange={(value) => handleOpeningInputChange("icon", value)}
+                        >
+                          <SelectTrigger id="opening-icon">
+                            <SelectValue placeholder="Select icon" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {iconChoices.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="opening-gradient">Highlight Gradient</Label>
+                      <Select
+                        value={openingForm.gradient}
+                        onValueChange={(value) => handleOpeningInputChange("gradient", value)}
+                      >
+                        <SelectTrigger id="opening-gradient">
+                          <SelectValue placeholder="Select gradient style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gradientChoices.map((gradient) => (
+                            <SelectItem key={gradient.value} value={gradient.value}>
+                              {gradient.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="opening-description">Role Description</Label>
+                      <Textarea
+                        id="opening-description"
+                        value={openingForm.description}
+                        onChange={(e) => handleOpeningInputChange("description", e.target.value)}
+                        placeholder="Describe the responsibilities, required skills, and expectations for this role."
+                        rows={6}
+                        required
+                      />
+                    </div>
+
+                    {editingOpening && (
+                      <Button type="button" variant="outline" className="w-full" onClick={cancelOpeningEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel Editing
+                      </Button>
+                    )}
+
+                    <Button type="submit" disabled={submittingOpening} className="w-full">
+                      {submittingOpening ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          {editingOpening ? "Update Opening" : "Save Opening"}
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Briefcase className="h-5 w-5" />
+                      Current Openings
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">Manage published roles for the careers page.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={fetchOpenings} disabled={loadingOpenings}>
+                    <Loader2 className={`h-4 w-4 mr-2 ${loadingOpenings ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {loadingOpenings ? (
+                    <div className="flex items-center justify-center py-10 text-gray-500">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      Loading openings...
+                    </div>
+                  ) : openings.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500">
+                      No current openings yet. Use the form to add your first opportunity.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {openings.map((opening) => {
+                        const Icon = iconComponentMap[opening.icon || "briefcase"] || Briefcase
+                        const gradient = opening.gradient || "from-red-500 to-red-600"
+                        return (
+                          <div key={opening._id} className="border rounded-xl overflow-hidden shadow-sm bg-white">
+                            <div className={`h-1 bg-linear-to-r ${gradient}`}></div>
+                            <div className="p-6 space-y-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className={`p-3 rounded-lg bg-linear-to-br ${gradient} text-white`}>
+                                  <Icon className="w-5 h-5" />
+                                </div>
+                                <Badge className="bg-emerald-100 text-emerald-700">
+                                  {opening.employmentType || "Full-time"}
+                                </Badge>
+                              </div>
+                              <div>
+                                <h3 className="text-xl font-semibold text-[#2E1F44]">{opening.title}</h3>
+                                <p className="mt-2 text-sm text-[#2E1F44]/70 leading-relaxed line-clamp-3">
+                                  {opening.description}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-6 text-xs text-[#2E1F44]/70 uppercase tracking-[0.2em] font-semibold">
+                                <span>
+                                  <span className="text-[#2E1F44] mr-1 normal-case font-semibold tracking-normal">Location:</span>
+                                  {opening.location}
+                                </span>
+                                <span>
+                                  <span className="text-[#2E1F44] mr-1 normal-case font-semibold tracking-normal">Experience:</span>
+                                  {opening.experience}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="px-6 py-4 border-t flex flex-wrap gap-2">
+                              <Button variant="outline" size="sm" onClick={() => handleEditOpening(opening)}>
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteOpening(opening._id)}>
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Banner Management Tab */}
