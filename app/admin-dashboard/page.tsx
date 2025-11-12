@@ -14,12 +14,12 @@ import TopBar from "@/components/TopBar"
 import MainHeader from "@/components/MainHeader"
 import Footer from "@/components/Footer"
 import { useToast } from "@/contexts/ToastContext"
-import {
-  Plus,
-  Package,
-  Edit,
-  Trash2,
-  Eye,
+import { 
+  Plus, 
+  Package, 
+  Edit, 
+  Trash2, 
+  Eye, 
   Upload,
   Save,
   X,

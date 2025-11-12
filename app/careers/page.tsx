@@ -16,35 +16,35 @@ type Opening = {
   gradient?: string
 }
 
-const benefits = [
-  {
-    icon: TrendingUp,
-    title: "Growth Opportunities",
+  const benefits = [
+    {
+      icon: TrendingUp,
+      title: "Growth Opportunities",
     description: "Career advancement and skill development programs",
-  },
-  {
-    icon: Users,
-    title: "Competitive Benefits",
+    },
+    {
+      icon: Users,
+      title: "Competitive Benefits",
     description: "Attractive salary packages and comprehensive benefits",
-  },
-  {
-    icon: Users,
-    title: "Team Environment",
+    },
+    {
+      icon: Users,
+      title: "Team Environment",
     description: "Collaborative and supportive work culture",
-  },
-  {
-    icon: BookOpen,
-    title: "Learning & Development",
+    },
+    {
+      icon: BookOpen,
+      title: "Learning & Development",
     description: "Training programs and industry certifications",
   },
-]
+  ]
 
-const processSteps = [
-  { number: 1, title: "Apply Online", description: "Submit your application through our online portal" },
-  { number: 2, title: "Initial Screening", description: "HR team reviews your application and qualifications" },
-  { number: 3, title: "Interview Process", description: "Technical and HR interviews with our team" },
+  const processSteps = [
+    { number: 1, title: "Apply Online", description: "Submit your application through our online portal" },
+    { number: 2, title: "Initial Screening", description: "HR team reviews your application and qualifications" },
+    { number: 3, title: "Interview Process", description: "Technical and HR interviews with our team" },
   { number: 4, title: "Job Offer", description: "Successful candidates receive job offers" },
-]
+  ]
 
 const iconMap: Record<string, typeof Briefcase> = {
   briefcase: Briefcase,

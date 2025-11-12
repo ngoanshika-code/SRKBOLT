@@ -410,7 +410,7 @@ export default function SRKBoltHomepage() {
               <div>
                 <h2 className="text-4xl font-bold text-[#A02222] mb-4">SRK BOLT</h2>
                 <h3 className="text-3xl font-bold text-[#2E1F44] mb-2">
-                  Leading fasteners suppliers in India, Since <span className="text-[#A02222]">2015</span>
+                  Leading fasteners suppliers in UAE, Since <span className="text-[#A02222]">2015</span>
                 </h3>
               </div>
               
@@ -419,7 +419,7 @@ export default function SRKBoltHomepage() {
                   Established in 2015, SRK Bolt started as a trading business dealing in a range of building material items such as nails, machine screws and self-tapping screws.
                 </p>
                 <p>
-                  As India and other Asian countries developed, SRK Bolt progressed and diversified into specialized engineering and marine quality fasteners pertaining to various sectors such as the construction and steel structure industry, oil and petro-chemical industry, the automotive sector, shipbuilding, electrical and switch gear and the furniture industry.
+                  As UAE and other Asian countries developed, SRK Bolt progressed and diversified into specialized engineering and marine quality fasteners pertaining to various sectors such as the construction and steel structure industry, oil and petro-chemical industry, the automotive sector, shipbuilding, electrical and switch gear and the furniture industry.
                 </p>
                 <p>
                   It's legacy of over 10 years has allowed SRK Bolt to become one of the leading stockist and trader of engineering fasteners in the Indian region dealing in a variety of more than 5k SKU's coming from reputed manufacturers located in India, Europe and the Far East Asia.

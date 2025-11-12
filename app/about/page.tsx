@@ -90,7 +90,7 @@ export default function AboutPage() {
             <div className="space-y-6">
               <h2 className="text-4xl font-bold text-[#A02222]">SRK BOLT</h2>
               <h3 className="text-3xl font-bold text-[#2E1F44]">
-                Leading fasteners suppliers in India, Since <span className="text-[#A02222]">2015</span>
+                Leading fasteners suppliers in UAE, Since <span className="text-[#A02222]">2015</span>
               </h3>
               <div className="space-y-4 text-[rgba(46,31,68,0.85)]">
                 <p>
@@ -98,7 +98,7 @@ export default function AboutPage() {
                   nails, machine screws and self-tapping screws.
               </p>
                 <p>
-                  As India and other Asian countries developed, SRK Bolt progressed and diversified into specialized engineering and
+                  As UAE and other Asian countries developed, SRK Bolt progressed and diversified into specialized engineering and
                   marine quality fasteners pertaining to various sectors such as the construction and steel structure industry, oil and
                   petro-chemical industry, the automotive sector, shipbuilding, electrical and switch gear and the furniture industry.
               </p>
