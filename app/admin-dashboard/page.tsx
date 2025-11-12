@@ -31,7 +31,8 @@ import {
   ShoppingCart,
   Loader2,
   Download,
-  FileText
+  FileText,
+  Images,
 } from "lucide-react"
 
 interface Product {
@@ -90,6 +91,27 @@ const emptyBlogForm = {
   category: "",
 }
 
+const MAX_BANNER_COUNT = 3
+
+type BannerSlideForm = {
+  title: string
+  highlight: string
+  subtitle: string
+  image: string
+}
+
+const createEmptyBannerForm = () => ({
+  slides: Array.from({ length: MAX_BANNER_COUNT }, () => ({
+    title: "",
+    highlight: "",
+    subtitle: "",
+    image: "",
+  })) as BannerSlideForm[],
+  order: "",
+})
+
+type BannerForm = ReturnType<typeof createEmptyBannerForm>
+
 export default function AdminDashboard() {
   const { toast } = useToast()
   const router = useRouter()
@@ -113,6 +135,11 @@ export default function AdminDashboard() {
   const [submittingBlog, setSubmittingBlog] = useState(false)
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null)
   const [blogForm, setBlogForm] = useState(emptyBlogForm)
+  const [banners, setBanners] = useState<Banner[]>([])
+  const [loadingBanners, setLoadingBanners] = useState(false)
+  const [submittingBanner, setSubmittingBanner] = useState(false)
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null)
+  const [bannerForm, setBannerForm] = useState<BannerForm>(createEmptyBannerForm())
   const [editFormData, setEditFormData] = useState({
     name: "",
     description: "",
@@ -173,6 +200,8 @@ export default function AdminDashboard() {
     .filter((url) => url.length > 0)
   const remainingImageSlots = Math.max(0, MAX_IMAGES - (sanitizedManualLinks.length + uploadedImageUrls.length))
 
+  const hasReachedBannerLimit = !editingBanner && banners.length >= MAX_BANNER_COUNT
+
   // Check authentication on component mount
   useEffect(() => {
     checkAuthentication()
@@ -194,6 +223,7 @@ export default function AdminDashboard() {
         fetchDataSheetDownloads()
         fetchRFQEnquiries()
         fetchBlogs()
+        fetchBanners()
       } else {
         // Session expired
         localStorage.removeItem("adminLoggedIn")
@@ -268,6 +298,307 @@ export default function AdminDashboard() {
       })
     } finally {
       setLoadingBlogs(false)
+    }
+  }
+
+  const fetchBanners = async () => {
+    try {
+      setLoadingBanners(true)
+      const response = await fetch('/api/banners')
+      if (response.ok) {
+        const data = await response.json()
+        setBanners(data)
+      } else {
+        throw new Error('Failed to fetch banners')
+      }
+    } catch (error) {
+      console.error('Error fetching banners:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch banners",
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingBanners(false)
+    }
+  }
+
+  const handleBannerInputChange = (field: keyof Omit<BannerForm, "slides">, value: string) => {
+    setBannerForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleBannerSlideChange = (
+    index: number,
+    field: keyof BannerForm["slides"][number],
+    value: string
+  ) => {
+    setBannerForm((prev) => ({
+      ...prev,
+      slides: prev.slides.map((slide, slideIndex) =>
+        slideIndex === index ? { ...slide, [field]: value } : slide
+      ),
+    }))
+  }
+
+  const handleBannerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!editingBanner && banners.length >= MAX_BANNER_COUNT) {
+      toast({
+        title: "Banner limit reached",
+        description: `You can manage up to ${MAX_BANNER_COUNT} banners. Delete or edit an existing banner to make changes.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    const sanitizedSlides = bannerForm.slides
+      .map((slide, index) => ({
+        index,
+        title: slide.title.trim(),
+        highlight: slide.highlight.trim(),
+        subtitle: slide.subtitle.trim(),
+        image: slide.image.trim(),
+      }))
+      .filter((slide) => slide.image.length > 0)
+      .sort((a, b) => a.index - b.index)
+
+    if (sanitizedSlides.length === 0 || !sanitizedSlides.some((slide) => slide.index === 0)) {
+      toast({
+        title: "Missing fields",
+        description: "Banner 1 requires an image URL before saving.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const uniqueSlides = sanitizedSlides.filter(
+      (slide, idx, arr) => arr.findIndex((candidate) => candidate.image === slide.image) === idx
+    )
+
+    const submittedOrder = bannerForm.order.trim()
+    let parsedOrder: number | undefined
+
+    if (submittedOrder) {
+      const numericOrder = Number(submittedOrder)
+      if (Number.isNaN(numericOrder)) {
+        toast({
+          title: "Invalid order",
+          description: "Display order must be a number",
+          variant: "destructive",
+        })
+        return
+      }
+      parsedOrder = numericOrder
+    }
+
+    try {
+      setSubmittingBanner(true)
+
+      if (editingBanner) {
+        const [primarySlide, ...extraSlides] = uniqueSlides
+
+        const updatePayload: Record<string, unknown> = {
+          title: primarySlide.title,
+          subtitle: primarySlide.subtitle,
+          highlight: primarySlide.highlight,
+          image: primarySlide.image,
+        }
+
+        if (parsedOrder !== undefined) {
+          updatePayload.order = parsedOrder
+        }
+
+        const updateResponse = await fetch(`/api/banners/${editingBanner._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatePayload),
+        })
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json()
+          throw new Error(errorData.error || 'Failed to update banner')
+        }
+
+        let createdCount = 0
+        if (extraSlides.length > 0) {
+          const availableSlots = Math.max(0, MAX_BANNER_COUNT - banners.length)
+          if (availableSlots === 0) {
+            toast({
+              title: "No space for extra images",
+              description: `You already have ${MAX_BANNER_COUNT} banners. Remove one before adding more images.`,
+              variant: "destructive",
+            })
+          } else {
+            const slidesToCreate = extraSlides.slice(0, availableSlots)
+            const baseOrder =
+              parsedOrder !== undefined
+                ? parsedOrder + 1
+                : (editingBanner.order ?? banners.length) + 1
+
+            for (let i = 0; i < slidesToCreate.length; i += 1) {
+              const createPayload = {
+                title: slidesToCreate[i].title,
+                subtitle: slidesToCreate[i].subtitle,
+                highlight: slidesToCreate[i].highlight,
+                image: slidesToCreate[i].image,
+                order: baseOrder + i,
+              }
+
+              const createResponse = await fetch('/api/banners', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(createPayload),
+              })
+
+              if (!createResponse.ok) {
+                const errorData = await createResponse.json()
+                throw new Error(errorData.error || 'Failed to save additional banner')
+              }
+
+              createdCount += 1
+            }
+
+            if (extraSlides.length > slidesToCreate.length) {
+              toast({
+                title: 'Banner limit reached',
+                description: `Added ${slidesToCreate.length} additional banner(s). ${extraSlides.length - slidesToCreate.length} slide(s) were skipped because only ${MAX_BANNER_COUNT} slides are allowed.`,
+                variant: 'destructive',
+              })
+            }
+          }
+        }
+
+        toast({
+          title: 'Banner updated',
+          description: createdCount > 0 ? `Banner updated and ${createdCount} new slide(s) added.` : 'Slider banner updated successfully.',
+          variant: 'success',
+        })
+      } else {
+        const availableSlots = Math.max(0, MAX_BANNER_COUNT - banners.length)
+        if (availableSlots <= 0) {
+          toast({
+            title: 'Banner limit reached',
+            description: `You already have ${MAX_BANNER_COUNT} banners configured. Delete one to add a new image.`,
+            variant: 'destructive',
+          })
+          return
+        }
+
+        const slidesToCreate = uniqueSlides.slice(0, availableSlots)
+        const baseOrder = parsedOrder ?? banners.length
+        let createdCount = 0
+
+        for (let i = 0; i < slidesToCreate.length; i += 1) {
+          const createPayload = {
+            title: slidesToCreate[i].title,
+            subtitle: slidesToCreate[i].subtitle,
+            highlight: slidesToCreate[i].highlight,
+            image: slidesToCreate[i].image,
+            order: baseOrder + i,
+          }
+
+          const createResponse = await fetch('/api/banners', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(createPayload),
+          })
+
+          if (!createResponse.ok) {
+            const errorData = await createResponse.json()
+            throw new Error(errorData.error || 'Failed to save banner')
+          }
+
+          createdCount += 1
+        }
+
+        if (uniqueSlides.length > slidesToCreate.length) {
+          toast({
+            title: 'Banner limit reached',
+            description: `${slidesToCreate.length} banner(s) added. ${uniqueSlides.length - slidesToCreate.length} slide(s) were skipped because only ${MAX_BANNER_COUNT} slides are allowed.`,
+            variant: 'destructive',
+          })
+        }
+
+        toast({
+          title: 'Banner added',
+          description: `${createdCount} banner slide(s) created successfully.`,
+          variant: 'success',
+        })
+      }
+
+      setBannerForm(createEmptyBannerForm())
+      setEditingBanner(null)
+      fetchBanners()
+    } catch (error) {
+      console.error('Error saving banner:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to save banner',
+        variant: 'destructive',
+      })
+    } finally {
+      setSubmittingBanner(false)
+    }
+  }
+
+  const handleEditBanner = (banner: Banner) => {
+    setEditingBanner(banner)
+    const form = createEmptyBannerForm()
+    form.slides[0] = {
+      title: banner.title || '',
+      highlight: banner.highlight || '',
+      subtitle: banner.subtitle || '',
+      image: banner.image || '',
+    }
+    form.order = banner.order !== undefined ? String(banner.order) : ''
+    setBannerForm(form)
+    setActiveTab('banners')
+  }
+
+  const cancelBannerEdit = () => {
+    setEditingBanner(null)
+    setBannerForm(createEmptyBannerForm())
+  }
+
+  const handleDeleteBanner = async (bannerId?: string) => {
+    if (!bannerId) return
+    const confirmed = confirm('Are you sure you want to delete this banner?')
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/banners/${bannerId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete banner')
+      }
+
+      toast({
+        title: 'Banner deleted',
+        description: 'Slider banner removed successfully',
+        variant: 'success',
+      })
+
+      fetchBanners()
+    } catch (error) {
+      console.error('Error deleting banner:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete banner',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -1010,7 +1341,7 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="add-product" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Product
@@ -1026,6 +1357,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="rfq-enquiries" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               RFQ Enquiries
+            </TabsTrigger>
+            <TabsTrigger value="banners" className="flex items-center gap-2">
+              <Images className="h-4 w-4" />
+              Banners
             </TabsTrigger>
             <TabsTrigger value="blogs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -1941,6 +2276,224 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Banner Management Tab */}
+          <TabsContent value="banners">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="bg-white shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {editingBanner ? (
+                      <>
+                        <Edit className="h-5 w-5" />
+                        Edit Banner: {editingBanner.title}
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-5 w-5" />
+                        Add Slider Banner
+                      </>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleBannerSubmit} className="space-y-5">
+                    {hasReachedBannerLimit && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        You already have {MAX_BANNER_COUNT} banners published. Delete or edit an existing banner to make room for a new slide.
+                      </div>
+                    )}
+                    {bannerForm.slides.map((slide, index) => {
+                      const bannerIndex = index + 1
+                      const inputPrefix = `banner-${index}`
+                      const requireImage = index === 0
+                      const slideDisabled = hasReachedBannerLimit
+
+                      return (
+                        <div
+                          key={inputPrefix}
+                          className="space-y-4 rounded-2xl border border-[#E5E5E5] bg-[#FAFAFC] p-4 md:p-5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#A02222]">
+                              Banner {bannerIndex}
+                            </p>
+                            {requireImage && (
+                              <Badge variant="outline" className="text-xs border-[#A02222] text-[#A02222]">
+                                Required
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`${inputPrefix}-title`}>Headline</Label>
+                            <Input
+                              id={`${inputPrefix}-title`}
+                              value={slide.title}
+                              onChange={(e) => handleBannerSlideChange(index, "title", e.target.value)}
+                              placeholder="e.g., Industrial Bolts & Screws"
+                              disabled={slideDisabled}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`${inputPrefix}-highlight`}>Highlight Label</Label>
+                            <Input
+                              id={`${inputPrefix}-highlight`}
+                              value={slide.highlight}
+                              onChange={(e) => handleBannerSlideChange(index, "highlight", e.target.value)}
+                              placeholder="e.g., New Release"
+                              disabled={slideDisabled}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`${inputPrefix}-subtitle`}>Supporting Copy</Label>
+                            <Textarea
+                              id={`${inputPrefix}-subtitle`}
+                              value={slide.subtitle}
+                              onChange={(e) => handleBannerSlideChange(index, "subtitle", e.target.value)}
+                              placeholder="Add a short supporting message"
+                              rows={4}
+                              disabled={slideDisabled}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor={`${inputPrefix}-image`}>Banner Image {bannerIndex}</Label>
+                            <Input
+                              id={`${inputPrefix}-image`}
+                              value={slide.image}
+                              onChange={(e) => handleBannerSlideChange(index, "image", e.target.value)}
+                              placeholder={`https://example.com/banner-${bannerIndex}.jpg`}
+                              required={requireImage}
+                              disabled={slideDisabled && !editingBanner}
+                            />
+                            <p className="text-xs text-gray-500">
+                              {requireImage
+                                ? "Primary background image (required)."
+                                : "Optional slide. Leave blank if you only need fewer banners."}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    <p className="text-xs text-gray-400">
+                      Fill up to {MAX_BANNER_COUNT} banner sections. Each completed section becomes a slide in the homepage
+                      carousel.
+                    </p>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="banner-order">Display Order</Label>
+                      <Input
+                        id="banner-order"
+                        type="number"
+                        value={bannerForm.order}
+                        onChange={(e) => handleBannerInputChange("order", e.target.value)}
+                        placeholder="0"
+                        disabled={hasReachedBannerLimit}
+                      />
+                      <p className="text-xs text-gray-500">Lower numbers appear first in the homepage slider. Maximum of {MAX_BANNER_COUNT} slides rotating in order.</p>
+                    </div>
+
+                    {editingBanner && (
+                      <Button type="button" variant="outline" className="w-full" onClick={cancelBannerEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel Editing
+                      </Button>
+                    )}
+
+                    <Button type="submit" disabled={submittingBanner || hasReachedBannerLimit} className="w-full">
+                      {submittingBanner ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          {editingBanner ? "Update Banner" : "Save Banner"}
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Images className="h-5 w-5" />
+                      Current Slider Banners <span className="text-xs font-medium text-gray-500">({Math.min(banners.length, MAX_BANNER_COUNT)} / {MAX_BANNER_COUNT})</span>
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">Update order, copy, or artwork for the homepage hero slider.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={fetchBanners} disabled={loadingBanners}>
+                    <Loader2 className={`h-4 w-4 mr-2 ${loadingBanners ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {loadingBanners ? (
+                    <div className="flex items-center justify-center py-10 text-gray-500">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      Loading banners...
+                    </div>
+                  ) : banners.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500">
+                      No banners configured yet. Add your first slide using the form.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {banners.map((banner) => (
+                        <div key={banner._id} className="border rounded-xl overflow-hidden shadow-sm">
+                          <div className="relative h-48 bg-gray-100">
+                            <img
+                              src={banner.image}
+                              alt={banner.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/30" />
+                            <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                              {banner.highlight && (
+                                <span className="text-xs uppercase tracking-[0.3em] text-[#FFD5D5] font-semibold block mb-2">
+                                  {banner.highlight}
+                                </span>
+                              )}
+                              <h3 className="text-lg font-semibold leading-snug">{banner.title}</h3>
+                              {banner.subtitle && (
+                                <p className="text-sm text-white/80 mt-2 line-clamp-2">{banner.subtitle}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                              <Badge variant="outline">Order: {banner.order ?? 0}</Badge>
+                              <span className="text-gray-400">
+                                Updated {banner.updatedAt ? new Date(banner.updatedAt).toLocaleDateString("en-IN") : "recently"}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={() => handleEditBanner(banner)}>
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteBanner(banner._id)}>
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Blogs Tab */}

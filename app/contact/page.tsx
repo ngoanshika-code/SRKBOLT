@@ -16,7 +16,7 @@ export default function ContactPage() {
               download
               className="inline-flex items-center gap-2 bg-[#A02222] text-white px-6 py-2.5 rounded-lg font-semibold border border-[#A02222] hover:bg-white hover:text-[#A02222] transition-colors shadow-lg"
             >
-              See Products
+              Download Catalogue
             </a>
           </div>
           

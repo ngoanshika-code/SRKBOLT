@@ -25,33 +25,116 @@ import {
 import { useRFQ } from "@/contexts/RFQContext"
 import { useCategoryProducts, type CategoryProductCard } from "@/hooks/useCategoryProducts"
 
+type BannerSlide = {
+  _id?: string
+  id?: number
+  title: string
+  subtitle?: string
+  highlight?: string
+  image: string
+  order?: number
+}
+
 type CategoryKey = "BOLTS" | "NUTS" | "WASHERS" | "SCREWS" | "HOOK & EYE" | "RIVETS" | "ATTACHMENTS" | "OTHER"
+
+const HERO_SLIDE_LIMIT = 3
+
+const FALLBACK_SLIDES: BannerSlide[] = [
+  {
+    id: 1,
+    title: "Industrial Bolts & Screws",
+    subtitle: "Precision-crafted fasteners engineered for mission-critical assemblies.",
+    highlight: "ENGINEERED PRECISION",
+    image:
+      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+  },
+  {
+    id: 2,
+    title: "Heavy Duty Fasteners",
+    subtitle: "High-torque performance for infrastructure, oil & gas, and marine projects.",
+    highlight: "HEAVY LOAD READY",
+    image:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+  },
+  {
+    id: 3,
+    title: "Precision Engineering",
+    subtitle: "Quality-certified supply programs tailored to your production schedules.",
+    highlight: "QUALITY ASSURED",
+    image:
+      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+  },
+]
 
 export default function SRKBoltHomepage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("BOLTS")
   const [isRFQPopupOpen, setIsRFQPopupOpen] = useState(false)
   const [rfqProductName, setRfqProductName] = useState("")
-  
-  const slides = [
-    {
-      id: 1,
-      image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-      title: "Industrial Bolts & Screws"
-    },
-    {
-      id: 2,
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-      title: "Heavy Duty Fasteners"
-    },
-    {
-      id: 3,
-      image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-      title: "Precision Engineering"
-    }
-  ]
+  const [slides, setSlides] = useState<BannerSlide[]>(FALLBACK_SLIDES.slice(0, HERO_SLIDE_LIMIT))
+  const [loadingSlides, setLoadingSlides] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+
+    const loadSlides = async () => {
+      try {
+        setLoadingSlides(true)
+        const response = await fetch("/api/banners")
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch banners")
+        }
+
+        const data = await response.json()
+        if (!isMounted) return
+
+        if (Array.isArray(data) && data.length > 0) {
+          const sanitizedSlides: BannerSlide[] = data
+            .filter((item: BannerSlide) => item && typeof item.image === "string")
+            .map((item: BannerSlide, index: number) => ({
+              ...item,
+              title: item.title?.trim() || `Slide ${index + 1}`,
+              subtitle: item.subtitle?.trim() || "",
+              highlight: item.highlight?.trim() || "",
+            }))
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+          setSlides(sanitizedSlides.slice(0, HERO_SLIDE_LIMIT))
+        } else {
+          setSlides(FALLBACK_SLIDES.slice(0, HERO_SLIDE_LIMIT))
+        }
+      } catch (error) {
+        console.error("Error loading banners:", error)
+        if (isMounted) {
+          setSlides(FALLBACK_SLIDES.slice(0, HERO_SLIDE_LIMIT))
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingSlides(false)
+        }
+      }
+    }
+
+    loadSlides()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (slides.length === 0) {
+      setCurrentSlide(0)
+      return
+    }
+
+    setCurrentSlide((prev) => (prev >= slides.length ? 0 : prev))
+  }, [slides.length])
+
+  useEffect(() => {
+    if (slides.length === 0) return
+
     const timer = setInterval(() => {
       setCurrentSlide((prev: number) => (prev + 1) % slides.length)
     }, 4000) // Change slide every 4 seconds
@@ -60,10 +143,12 @@ export default function SRKBoltHomepage() {
   }, [slides.length])
 
   const nextSlide = () => {
+    if (slides.length === 0) return
     setCurrentSlide((prev: number) => (prev + 1) % slides.length)
   }
 
   const prevSlide = () => {
+    if (slides.length === 0) return
     setCurrentSlide((prev: number) => (prev - 1 + slides.length) % slides.length)
   }
 
@@ -107,10 +192,10 @@ export default function SRKBoltHomepage() {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div key={slide.id} className="w-full shrink-0 h-full relative">
+            <div key={slide._id ?? slide.id ?? index} className="w-full shrink-0 h-full relative">
               <img
                 src={slide.image}
-                alt="SRK Bolt Fasteners"
+                alt={slide.title}
                 className="w-full h-full object-cover"
               />
               {/* Dark overlay for better contrast */}
@@ -118,16 +203,26 @@ export default function SRKBoltHomepage() {
               
               {/* Title overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white">
+                <div className="text-center text-white max-w-3xl mx-auto px-4">
+                  {slide.highlight && (
+                    <span className="inline-flex items-center justify-center bg-white/15 px-4 py-1.5 rounded-full uppercase tracking-[0.3em] text-xs md:text-sm font-semibold mb-4">
+                      {slide.highlight}
+                    </span>
+                  )}
                   <h2 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">
                     {slide.title}
                   </h2>
+                  {slide.subtitle && (
+                    <p className="mt-2 md:mt-4 text-white/80 text-base md:text-lg leading-relaxed">
+                      {slide.subtitle}
+                    </p>
+                  )}
                   <a
                     href="/srk-fastener.pdf"
                     download
                     className="mt-6 inline-flex items-center gap-2 bg-white text-[#A02222] px-6 py-2.5 rounded-lg font-semibold border border-white hover:bg-[#A02222] hover:text-white transition-colors shadow-lg"
                   >
-                    See Products
+                    Download Catalogue
                   </a>
                 </div>
               </div>
@@ -138,13 +233,15 @@ export default function SRKBoltHomepage() {
         {/* Navigation Arrows */}
         <button 
           onClick={prevSlide}
-          className="absolute left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10"
+          disabled={loadingSlides || slides.length <= 1}
+          className="absolute left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="w-8 h-8 text-gray-800" />
         </button>
         <button 
           onClick={nextSlide}
-          className="absolute right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10"
+          disabled={loadingSlides || slides.length <= 1}
+          className="absolute right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           <ChevronRight className="w-8 h-8 text-gray-800" />
         </button>

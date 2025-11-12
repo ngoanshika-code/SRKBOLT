@@ -95,7 +95,7 @@ export default function HeavyLoadAttachmentsPage() {
                     download
                     className="mt-6 inline-flex items-center gap-2 bg-white text-[#A02222] px-6 py-2.5 rounded-lg font-semibold border border-white hover:bg-[#A02222] hover:text-white transition-colors shadow-lg"
                   >
-                    See Products
+            Download Catalogue
                   </a>
                 </div>
               </div>

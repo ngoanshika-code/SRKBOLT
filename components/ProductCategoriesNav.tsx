@@ -7,19 +7,19 @@ import { ChevronRight, Wrench, Settings, FileText, Map } from "lucide-react"
 export default function ProductCategoriesNav() {
   return (
     <nav className="bg-[#A02222] text-white sticky top-0 z-40 shadow-lg">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center gap-6 py-3 text-sm font-semibold">
-          <Link href="/products" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors font-semibold">
+      <div className="w-full px-3 lg:px-4">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2 text-[9px] md:text-[11px] lg:text-xs font-semibold tracking-[0.05em]">
+          <Link href="/products" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors font-semibold uppercase tracking-[0.12em]">
             <span>ALL PRODUCTS</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
           </Link>
           <Link href="/bolts" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors">
             <Image
               src="/icons8-bolt-64.png"
               alt="Bolts Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>BOLTS</span>
           </Link>
@@ -27,9 +27,9 @@ export default function ProductCategoriesNav() {
             <Image
               src="/icons8-nut-64%20(1).png"
               alt="Nuts Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>NUTS</span>
           </Link>
@@ -37,9 +37,9 @@ export default function ProductCategoriesNav() {
             <Image
               src="/gasket.png"
               alt="Washers Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>WASHERS</span>
           </Link>
@@ -47,9 +47,9 @@ export default function ProductCategoriesNav() {
             <Image
               src="/screw%20(2).png"
               alt="Screws Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>SCREWS</span>
           </Link>
@@ -57,9 +57,9 @@ export default function ProductCategoriesNav() {
             <Image
               src="/hookandeye.png"
               alt="Hook & Eye Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>HOOK & EYE PRODUCTS</span>
           </Link>
@@ -67,19 +67,23 @@ export default function ProductCategoriesNav() {
             <Image
               src="/rivet.png"
               alt="Rivets Icon"
-              width={16}
-              height={16}
-              className="w-4 h-4 object-contain"
+              width={12}
+              height={12}
+              className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 object-contain"
             />
             <span>RIVETS, PIN & INSERTS</span>
           </Link>
           <Link href="/attachments" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors">
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
             <span>HEAVY LOAD ATTACHMENTS</span>
           </Link>
           <Link href="/other" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors">
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
             <span>OTHER PRODUCTS</span>
+          </Link>
+          <Link href="/contact" className="flex items-center gap-1 whitespace-nowrap hover:text-[#FFD5D5] transition-colors">
+            <Map className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
+            <span>CONTACT US</span>
           </Link>
         </div>
       </div>

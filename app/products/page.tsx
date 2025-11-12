@@ -75,7 +75,7 @@ export default function ProductsPage() {
                 key={card.name}
                 className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border border-[#EDEDED]"
               >
-                <div className="text-center">
+              <div className="text-center">
                   <div className="bg-[#FCE9E9] border border-[#A02222]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_2px_10px_rgba(160,34,34,0.12)]">
                     {card.icon.kind === "image" ? (
                       <Image
@@ -89,12 +89,12 @@ export default function ProductsPage() {
                     ) : (
                       <card.icon.component className="w-8 h-8 text-[#A02222]" />
                     )}
-                  </div>
+                </div>
                   <h3 className="text-xl font-semibold text-[#2E1F44] mb-2">{card.name}</h3>
                   <p className="text-[#2E1F44]/70 mb-4">{card.description}</p>
                   <a href={card.href} className="text-[#A02222] hover:text-[#2E1F44] font-semibold">
-                    View Products →
-                  </a>
+                  View Products →
+                </a>
                 </div>
               </div>
             ))}
