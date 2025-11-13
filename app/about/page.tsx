@@ -301,6 +301,39 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Meet Our Team */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#2E1F44] mb-4">Meet Our Team</h2>
+            <p className="text-lg text-[rgba(46,31,68,0.85)] max-w-2xl mx-auto">
+              The passionate individuals behind SRK Bolt's success, dedicated to delivering excellence in every fastener solution.
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="max-w-sm w-full">
+              <div className="bg-white rounded-2xl shadow-[0_12px_30px_rgba(46,31,68,0.12)] overflow-hidden border border-[#E4E1F0] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(46,31,68,0.18)] hover:-translate-y-1">
+                <div className="relative h-80 overflow-hidden bg-[#F7F7FA]">
+                  <img
+                    src="/picturee.jpeg"
+                    alt="Founder"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6 text-center">
+                  <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Founder</h3>
+                  <p className="text-[#A02222] font-semibold mb-4">Founder</p>
+                  <p className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed">
+                    Leading SRK Bolt with vision and dedication, driving innovation and excellence in the fastener industry.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-[#A02222] text-white">
         <div className="container mx-auto px-4 text-center">
