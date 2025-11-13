@@ -3,11 +3,14 @@ import { getCollection } from "@/lib/mongodb"
 
 const MAX_BANNERS = 3
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const page = searchParams.get("page") || "home"
+    
     const collection = await getCollection("banners")
     const banners = await collection
-      .find({})
+      .find({ page })
       .sort({ order: 1, createdAt: -1 })
       .limit(MAX_BANNERS)
       .toArray()
@@ -39,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     const subtitle = typeof body.subtitle === "string" ? body.subtitle.trim() : ""
     const highlight = typeof body.highlight === "string" ? body.highlight.trim() : ""
+    const page = typeof body.page === "string" ? body.page.trim() : "home"
 
     const rawOrder = body.order
     let order = Number.isFinite(rawOrder) ? Number(rawOrder) : existingCount
@@ -56,6 +60,7 @@ export async function POST(request: NextRequest) {
       highlight,
       image,
       order,
+      page,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }

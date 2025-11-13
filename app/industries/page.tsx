@@ -4,33 +4,100 @@ import Layout from "@/components/Layout"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, ExternalLink, Building, Car, Zap, Factory, Fuel, Plane } from "lucide-react"
 
+type BannerSlide = {
+  _id?: string
+  id?: number
+  title: string
+  subtitle?: string
+  highlight?: string
+  image: string
+  order?: number
+}
+
+const FALLBACK_SLIDES: BannerSlide[] = [
+  {
+    id: 1,
+    image: "https://t4.ftcdn.net/jpg/04/52/77/95/240_F_452779507_lESxLc72CJujLVivBiFCzP8I2y1sm91b.jpg",
+    title: "Industries We Serve",
+    subtitle: "Quality Fasteners Across All Sectors"
+  },
+  {
+    id: 2,
+    image: "https://t3.ftcdn.net/jpg/11/26/43/62/240_F_1126436292_KiDUhPlVRWynG6WIkUu0HfKcaI0tgtZE.jpg",
+    title: "Industrial Solutions",
+    subtitle: "Engineering Excellence for Every Industry"
+  },
+  {
+    id: 3,
+    image: "https://t4.ftcdn.net/jpg/04/87/17/99/240_F_487179985_vWWNxyr0facawhl0G4F9ir8mjmfK64lU.jpg",
+    title: "Global Reach",
+    subtitle: "Serving Industries Worldwide"
+  }
+]
+
 export default function IndustriesPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  
-  const slides = [
-    {
-      id: 1,
-      image: "https://t4.ftcdn.net/jpg/04/52/77/95/240_F_452779507_lESxLc72CJujLVivBiFCzP8I2y1sm91b.jpg",
-      title: "Industries We Serve",
-      subtitle: "Quality Fasteners Across All Sectors"
-    },
-    {
-      id: 2,
-      image: "https://t3.ftcdn.net/jpg/11/26/43/62/240_F_1126436292_KiDUhPlVRWynG6WIkUu0HfKcaI0tgtZE.jpg",
-      title: "Industrial Solutions",
-      subtitle: "Engineering Excellence for Every Industry"
-    },
-    {
-      id: 3,
-      image: "https://t4.ftcdn.net/jpg/04/87/17/99/240_F_487179985_vWWNxyr0facawhl0G4F9ir8mjmfK64lU.jpg",
-      title: "Global Reach",
-      subtitle: "Serving Industries Worldwide"
-    }
-  ]
+  const [slides, setSlides] = useState<BannerSlide[]>(FALLBACK_SLIDES)
+  const [loadingSlides, setLoadingSlides] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+    const loadSlides = async () => {
+      try {
+        setLoadingSlides(true)
+        const response = await fetch("/api/banners?page=industries")
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch banners")
+        }
+
+        const data = await response.json()
+        if (!isMounted) return
+
+        if (Array.isArray(data) && data.length > 0) {
+          const sanitizedSlides: BannerSlide[] = data
+            .filter((item: BannerSlide) => item && typeof item.image === "string")
+            .map((item: BannerSlide, index: number) => ({
+              ...item,
+              title: item.title?.trim() || `Slide ${index + 1}`,
+              subtitle: item.subtitle?.trim() || "",
+              highlight: item.highlight?.trim() || "",
+            }))
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+          setSlides(sanitizedSlides)
+        } else {
+          setSlides(FALLBACK_SLIDES)
+        }
+      } catch (error) {
+        console.error("Error loading banners:", error)
+        if (isMounted) {
+          setSlides(FALLBACK_SLIDES)
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingSlides(false)
+        }
+      }
+    }
+    loadSlides()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (slides.length === 0) {
+      setCurrentSlide(0)
+      return
+    }
+    setCurrentSlide((prev) => (prev >= slides.length ? 0 : prev))
+  }, [slides.length])
+
+  useEffect(() => {
+    if (slides.length === 0) return
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
+      setCurrentSlide((prev: number) => (prev + 1) % slides.length)
     }, 5000)
     return () => clearInterval(timer)
   }, [slides.length])
@@ -53,10 +120,10 @@ export default function IndustriesPage() {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div key={slide.id} className="w-full shrink-0 h-full relative">
+            <div key={slide._id ?? slide.id ?? index} className="w-full shrink-0 h-full relative">
               <img
                 src={slide.image}
-                alt="SRK Bolt Industries"
+                alt={slide.title}
                 className="w-full h-full object-cover"
               />
               {/* Dark overlay for better contrast */}
@@ -65,12 +132,19 @@ export default function IndustriesPage() {
               {/* Title overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white">
+                  {slide.highlight && (
+                    <span className="inline-flex items-center justify-center bg-white/15 px-4 py-1.5 rounded-full uppercase tracking-[0.3em] text-xs md:text-sm font-semibold mb-4">
+                      {slide.highlight}
+                    </span>
+                  )}
                   <h2 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">
                     {slide.title}
                   </h2>
-                  <p className="text-xl md:text-2xl drop-shadow-lg">
-                    {slide.subtitle}
-                  </p>
+                  {slide.subtitle && (
+                    <p className="text-xl md:text-2xl drop-shadow-lg">
+                      {slide.subtitle}
+                    </p>
+                  )}
                   <a
                     href="/srk-fastener.pdf"
                     download

@@ -52,6 +52,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
 
+    if (typeof body.page === "string") {
+      updates.page = body.page.trim() || "home"
+    }
+
     updates.updatedAt = new Date().toISOString()
 
     const collection = await getCollection("banners")

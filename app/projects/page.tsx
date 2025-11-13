@@ -4,35 +4,101 @@ import Layout from "@/components/Layout"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, MapPin, Calendar, ExternalLink } from "lucide-react"
 
+type BannerSlide = {
+  _id?: string
+  id?: number
+  title: string
+  subtitle?: string
+  highlight?: string
+  image: string
+  order?: number
+}
+
+const FALLBACK_SLIDES: BannerSlide[] = [
+  {
+    id: 1,
+    image: "https://t3.ftcdn.net/jpg/05/63/45/42/240_F_563454220_FynShMBjneQXf1CAr5ZuWV9W9PHp6CrU.jpg",
+    title: "Major Projects",
+    subtitle: "Engineering Excellence Across Industries",
+  },
+  {
+    id: 2,
+    image: "https://t3.ftcdn.net/jpg/11/76/17/28/240_F_1176172880_IzGMvsCPxZToFlMagCegpgmWIakuUaFY.jpg",
+    title: "Infrastructure Solutions",
+    subtitle: "Building Tomorrow's Infrastructure Today",
+  },
+  {
+    id: 3,
+    image: "https://t4.ftcdn.net/jpg/01/33/57/65/240_F_133576505_MROPMEGANhhZgubxWSviz47sN21MVWbh.jpg",
+    title: "Industrial Projects",
+    subtitle: "Powering Industries with Quality Fasteners",
+  },
+]
+
 export default function ProjectsPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  
-  const slides = [
-    {
-      id: 1,
-      image: "https://t3.ftcdn.net/jpg/05/63/45/42/240_F_563454220_FynShMBjneQXf1CAr5ZuWV9W9PHp6CrU.jpg",
-      title: "Major Projects",
-      subtitle: "Engineering Excellence Across Industries",
-    },
-    {
-      id: 2,
-      image: "https://t3.ftcdn.net/jpg/11/76/17/28/240_F_1176172880_IzGMvsCPxZToFlMagCegpgmWIakuUaFY.jpg",
-      title: "Infrastructure Solutions",
-      subtitle: "Building Tomorrow's Infrastructure Today",
-    },
-    {
-      id: 3,
-      image: "https://t4.ftcdn.net/jpg/01/33/57/65/240_F_133576505_MROPMEGANhhZgubxWSviz47sN21MVWbh.jpg",
-      title: "Industrial Projects",
-      subtitle: "Powering Industries with Quality Fasteners",
-    },
-  ]
+  const [slides, setSlides] = useState<BannerSlide[]>(FALLBACK_SLIDES)
+  const [loadingSlides, setLoadingSlides] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 5000)
+    let isMounted = true
+    const loadSlides = async () => {
+      try {
+        setLoadingSlides(true)
+        const response = await fetch("/api/banners?page=projects")
 
+        if (!response.ok) {
+          throw new Error("Failed to fetch banners")
+        }
+
+        const data = await response.json()
+        if (!isMounted) return
+
+        if (Array.isArray(data) && data.length > 0) {
+          const sanitizedSlides: BannerSlide[] = data
+            .filter((item: BannerSlide) => item && typeof item.image === "string")
+            .map((item: BannerSlide, index: number) => ({
+              ...item,
+              title: item.title?.trim() || `Slide ${index + 1}`,
+              subtitle: item.subtitle?.trim() || "",
+              highlight: item.highlight?.trim() || "",
+            }))
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+          setSlides(sanitizedSlides)
+        } else {
+          setSlides(FALLBACK_SLIDES)
+        }
+      } catch (error) {
+        console.error("Error loading banners:", error)
+        if (isMounted) {
+          setSlides(FALLBACK_SLIDES)
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingSlides(false)
+        }
+      }
+    }
+    loadSlides()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (slides.length === 0) {
+      setCurrentSlide(0)
+      return
+    }
+    setCurrentSlide((prev) => (prev >= slides.length ? 0 : prev))
+  }, [slides.length])
+
+  useEffect(() => {
+    if (slides.length === 0) return
+    const timer = setInterval(() => {
+      setCurrentSlide((prev: number) => (prev + 1) % slides.length)
+    }, 5000)
     return () => clearInterval(timer)
   }, [slides.length])
 
@@ -123,14 +189,19 @@ export default function ProjectsPage() {
           className="flex transition-transform duration-500 ease-in-out h-full"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
-          {slides.map((slide) => (
-            <div key={slide.id} className="w-full shrink-0 h-full relative">
+          {slides.map((slide, index) => (
+            <div key={slide._id ?? slide.id ?? index} className="w-full shrink-0 h-full relative">
               <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/50" />
               <div className="absolute inset-0 flex items-center justify-center text-white text-center px-4">
                 <div>
+                  {slide.highlight && (
+                    <span className="inline-flex items-center justify-center bg-white/15 px-4 py-1.5 rounded-full uppercase tracking-[0.3em] text-xs md:text-sm font-semibold mb-4">
+                      {slide.highlight}
+                    </span>
+                  )}
                   <h2 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">{slide.title}</h2>
-                  <p className="text-xl md:text-2xl drop-shadow-lg">{slide.subtitle}</p>
+                  {slide.subtitle && <p className="text-xl md:text-2xl drop-shadow-lg">{slide.subtitle}</p>}
                   <a
                     href="/srk-fastener.pdf"
                     download

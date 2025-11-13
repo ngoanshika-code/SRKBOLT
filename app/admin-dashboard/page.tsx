@@ -151,6 +151,7 @@ const createEmptyBannerForm = () => ({
     image: "",
   })) as BannerSlideForm[],
   order: "",
+  page: "home",
 })
 
 type BannerForm = ReturnType<typeof createEmptyBannerForm>
@@ -191,6 +192,7 @@ export default function AdminDashboard() {
   const [submittingBanner, setSubmittingBanner] = useState(false)
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null)
   const [bannerForm, setBannerForm] = useState<BannerForm>(createEmptyBannerForm())
+  const [uploadingBannerImages, setUploadingBannerImages] = useState<Record<number, boolean>>({})
   const [editFormData, setEditFormData] = useState({
     name: "",
     description: "",
@@ -687,6 +689,7 @@ export default function AdminDashboard() {
           subtitle: primarySlide.subtitle,
           highlight: primarySlide.highlight,
           image: primarySlide.image,
+          page: bannerForm.page || "home",
         }
 
         if (parsedOrder !== undefined) {
@@ -729,6 +732,7 @@ export default function AdminDashboard() {
                 highlight: slidesToCreate[i].highlight,
                 image: slidesToCreate[i].image,
                 order: baseOrder + i,
+                page: bannerForm.page || "home",
               }
 
               const createResponse = await fetch('/api/banners', {
@@ -784,6 +788,7 @@ export default function AdminDashboard() {
             highlight: slidesToCreate[i].highlight,
             image: slidesToCreate[i].image,
             order: baseOrder + i,
+            page: bannerForm.page || "home",
           }
 
           const createResponse = await fetch('/api/banners', {
@@ -842,6 +847,7 @@ export default function AdminDashboard() {
       image: banner.image || '',
     }
     form.order = banner.order !== undefined ? String(banner.order) : ''
+    form.page = (banner as any).page || "home"
     setBannerForm(form)
     setActiveTab('banners')
   }
@@ -1033,6 +1039,71 @@ export default function AdminDashboard() {
 
   const removeImage = (index: number) => {
     setUploadedImageUrls(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleBannerImageUpload = async (file: File, slideIndex: number) => {
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Only JPEG, PNG, WebP, and GIF images are allowed.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setUploadingBannerImages(prev => ({ ...prev, [slideIndex]: true }))
+      
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        const errorMessage = errorData.error || errorData.details || 'Upload failed'
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      const imageUrl = data.imageUrl
+
+      // Update the banner form with the uploaded image URL
+      handleBannerSlideChange(slideIndex, "image", imageUrl)
+
+      toast({
+        title: "Image uploaded successfully",
+        description: "Banner image has been uploaded to Cloudinary",
+        variant: "success",
+      })
+    } catch (error) {
+      console.error('Error uploading banner image:', error)
+      toast({
+        title: "Upload error",
+        description: error instanceof Error ? error.message : "Failed to upload banner image",
+        variant: "destructive",
+      })
+    } finally {
+      setUploadingBannerImages(prev => ({ ...prev, [slideIndex]: false }))
+    }
   }
 
   const addArrayField = (field: string) => {
@@ -2877,6 +2948,8 @@ export default function AdminDashboard() {
 
                           <div className="space-y-2">
                             <Label htmlFor={`${inputPrefix}-image`}>Banner Image {bannerIndex}</Label>
+                            
+                            {/* Image URL Input */}
                             <Input
                               id={`${inputPrefix}-image`}
                               value={slide.image}
@@ -2885,9 +2958,83 @@ export default function AdminDashboard() {
                               required={requireImage}
                               disabled={slideDisabled && !editingBanner}
                             />
+                            
+                            {/* Divider */}
+                            <div className="flex items-center gap-2 my-2">
+                              <div className="flex-1 border-t border-gray-300"></div>
+                              <span className="text-xs text-gray-500">OR</span>
+                              <div className="flex-1 border-t border-gray-300"></div>
+                            </div>
+
+                            {/* File Upload */}
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#A02222] transition-colors">
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) {
+                                    handleBannerImageUpload(file, index)
+                                  }
+                                  // Reset input
+                                  e.target.value = ''
+                                }}
+                                className="hidden"
+                                id={`${inputPrefix}-file-upload`}
+                                disabled={slideDisabled && !editingBanner || uploadingBannerImages[index]}
+                              />
+                              <label
+                                htmlFor={`${inputPrefix}-file-upload`}
+                                className={`cursor-pointer flex flex-col items-center ${(slideDisabled && !editingBanner) || uploadingBannerImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                {uploadingBannerImages[index] ? (
+                                  <div className="flex flex-col items-center">
+                                    <Loader2 className="h-6 w-6 text-[#A02222] animate-spin mb-2" />
+                                    <p className="text-sm text-gray-600">Uploading to Cloudinary...</p>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center">
+                                    <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                                    <p className="text-sm font-medium text-gray-600">
+                                      Click to upload image
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      JPEG, PNG, WebP, or GIF (max 5MB)
+                                    </p>
+                                  </div>
+                                )}
+                              </label>
+                            </div>
+
+                            {/* Image Preview */}
+                            {slide.image && (
+                              <div className="mt-3">
+                                <Label className="text-xs text-gray-600 mb-2 block">Preview:</Label>
+                                <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200">
+                                  <img
+                                    src={slide.image}
+                                    alt={`Banner ${bannerIndex} preview`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleBannerSlideChange(index, "image", "")}
+                                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors"
+                                    disabled={slideDisabled && !editingBanner}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
                             <p className="text-xs text-gray-500">
                               {requireImage
-                                ? "Primary background image (required)."
+                                ? "Primary background image (required). Enter URL or upload an image."
                                 : "Optional slide. Leave blank if you only need fewer banners."}
                             </p>
                           </div>
@@ -2901,6 +3048,29 @@ export default function AdminDashboard() {
                     </p>
 
                     <div className="space-y-2">
+                      <Label htmlFor="banner-page">Page</Label>
+                      <Select
+                        value={bannerForm.page}
+                        onValueChange={(value) => handleBannerInputChange("page", value)}
+                        disabled={hasReachedBannerLimit}
+                      >
+                        <SelectTrigger id="banner-page">
+                          <SelectValue placeholder="Select page" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="home">Home Page</SelectItem>
+                          <SelectItem value="about">About Us</SelectItem>
+                          <SelectItem value="industries">Industries</SelectItem>
+                          <SelectItem value="projects">Projects</SelectItem>
+                          <SelectItem value="brands">Our Brands</SelectItem>
+                          <SelectItem value="blogs">Blogs</SelectItem>
+                          <SelectItem value="careers">Careers</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">Select which page this banner will be displayed on.</p>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="banner-order">Display Order</Label>
                       <Input
                         id="banner-order"
@@ -2910,7 +3080,7 @@ export default function AdminDashboard() {
                         placeholder="0"
                         disabled={hasReachedBannerLimit}
                       />
-                      <p className="text-xs text-gray-500">Lower numbers appear first in the homepage slider. Maximum of {MAX_BANNER_COUNT} slides rotating in order.</p>
+                      <p className="text-xs text-gray-500">Lower numbers appear first in the slider. Maximum of {MAX_BANNER_COUNT} slides rotating in order.</p>
                     </div>
 
                     {editingBanner && (
@@ -2944,7 +3114,7 @@ export default function AdminDashboard() {
                       <Images className="h-5 w-5" />
                       Current Slider Banners <span className="text-xs font-medium text-gray-500">({Math.min(banners.length, MAX_BANNER_COUNT)} / {MAX_BANNER_COUNT})</span>
                     </CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">Update order, copy, or artwork for the homepage hero slider.</p>
+                    <p className="text-sm text-gray-600 mt-1">Manage banners for different pages. Each page can have up to {MAX_BANNER_COUNT} banners.</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={fetchBanners} disabled={loadingBanners}>
                     <Loader2 className={`h-4 w-4 mr-2 ${loadingBanners ? "animate-spin" : ""}`} />
@@ -2985,8 +3155,11 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           <div className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
                               <Badge variant="outline">Order: {banner.order ?? 0}</Badge>
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                Page: {(banner as any).page || "home"}
+                              </Badge>
                               <span className="text-gray-400">
                                 Updated {banner.updatedAt ? new Date(banner.updatedAt).toLocaleDateString("en-IN") : "recently"}
                               </span>

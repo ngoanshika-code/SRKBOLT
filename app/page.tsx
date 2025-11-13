@@ -80,7 +80,7 @@ export default function SRKBoltHomepage() {
     const loadSlides = async () => {
       try {
         setLoadingSlides(true)
-        const response = await fetch("/api/banners")
+        const response = await fetch("/api/banners?page=home")
 
         if (!response.ok) {
           throw new Error("Failed to fetch banners")

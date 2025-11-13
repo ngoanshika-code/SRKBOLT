@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout"
 import { getCollection } from "@/lib/mongodb"
 import { JobOpeningsGrid } from "@/components/careers/JobOpenings"
+import CareersBanner from "@/components/careers/CareersBanner"
 import { Briefcase, Users, TrendingUp, BookOpen, ArrowRight, CheckCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -91,7 +92,10 @@ export default async function CareersPage() {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      {/* Hero Section - Image Slider */}
+      <CareersBanner />
+
+      {/* Hero Content Section */}
       <div className="relative bg-linear-to-r from-gray-900 via-red-900 to-gray-900 text-white py-12">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full blur-3xl"></div>

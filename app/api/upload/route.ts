@@ -50,8 +50,20 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Error uploading file:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload file'
+    
+    // Provide more helpful error messages
+    let userMessage = 'Failed to upload file'
+    if (errorMessage.includes('Cloudinary is not configured')) {
+      userMessage = 'Cloudinary is not configured. Please set up your Cloudinary credentials in the .env file.'
+    } else if (errorMessage.includes('api_key')) {
+      userMessage = 'Cloudinary API key is missing. Please check your .env file.'
+    } else if (errorMessage.includes('Must supply')) {
+      userMessage = 'Cloudinary configuration is incomplete. Please check your .env file for CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: userMessage, details: errorMessage },
       { status: 500 }
     )
   }
