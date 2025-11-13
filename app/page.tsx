@@ -234,14 +234,14 @@ export default function SRKBoltHomepage() {
         <button 
           onClick={prevSlide}
           disabled={loadingSlides || slides.length <= 1}
-          className="absolute left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="w-8 h-8 text-gray-800" />
         </button>
         <button 
           onClick={nextSlide}
           disabled={loadingSlides || slides.length <= 1}
-          className="absolute right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl rounded-full p-4 transition-all duration-300 transform hover:scale-110 z-10 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
           <ChevronRight className="w-8 h-8 text-gray-800" />
         </button>
@@ -328,14 +328,14 @@ export default function SRKBoltHomepage() {
               No products available in this category yet. Add new items from the admin dashboard to populate this catalogue.
             </div>
           ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-8">
               {databaseProducts.slice(0, 8).map((product) => (
               <div
                   key={product.id ?? product.name}
-                  className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-lg transition-all duration-300 overflow-hidden"
+                  className="bg-white rounded-lg md:rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-lg transition-all duration-300 overflow-hidden"
                 >
                 {/* Product Image */}
-                <div className="aspect-square bg-gray-50 flex items-center justify-center p-4">
+                <div className="aspect-square bg-gray-50 flex items-center justify-center p-2 sm:p-3 md:p-4">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -344,29 +344,31 @@ export default function SRKBoltHomepage() {
                 </div>
                 
                 {/* Product Name */}
-                <div className="p-4 text-center">
-                  <h3 className="text-base font-semibold text-[#2E1F44] leading-tight">{product.name}</h3>
+                <div className="p-2 sm:p-3 md:p-4 text-center">
+                  <h3 className="text-[11px] sm:text-xs md:text-sm lg:text-base font-semibold text-[#2E1F44] leading-tight line-clamp-2">{product.name}</h3>
                 </div>
                 
                 {/* Buttons */}
-                <div className="px-4 pb-4">
-                  <div className="flex gap-2 mb-3">
+                <div className="px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 md:pb-4">
+                  <div className="flex flex-nowrap gap-1 sm:gap-1.5 md:gap-2 mb-2 sm:mb-2.5 md:mb-3">
                     <button 
                       onClick={() => {
                           const categoryParam = encodeURIComponent(product.category || selectedCategory)
                           window.location.href = `/view-details?name=${encodeURIComponent(product.name)}&category=${categoryParam}`
                         }}
-                      className="flex-1 border border-[#2E1F44] text-[#2E1F44] text-xs font-semibold py-2 rounded-md transition-colors duration-200 flex items-center justify-center hover:bg-[#A02222] hover:text-white hover:border-[#A02222]"
+                      className="flex-1 border border-[#2E1F44] text-[#2E1F44] text-[9px] sm:text-[10px] md:text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-0.5 sm:gap-1 hover:bg-[#A02222] hover:text-white hover:border-[#A02222] whitespace-nowrap"
                     >
-                      <FileText className="w-3 h-3 mr-1" />
-                      VIEW-DETAIL
+                      <FileText className="hidden sm:block w-3 h-3 shrink-0" />
+                      <span className="hidden sm:inline">VIEW-DETAIL</span>
+                      <span className="sm:hidden">VIEW</span>
                     </button>
                     <button 
                       onClick={() => handleWhatsAppClick(product)}
-                      className="flex-1 bg-[#25D366] hover:bg-[#1ebe5a] text-white text-xs font-semibold py-2 rounded-md transition-colors duration-200 flex items-center justify-center"
+                      className="flex-1 bg-[#25D366] hover:bg-[#1ebe5a] text-white text-[9px] sm:text-[10px] md:text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-0.5 sm:gap-1 whitespace-nowrap"
                     >
-                      <MessageCircle className="w-3 h-3 mr-1" />
-                      WHATSAPP
+                      <MessageCircle className="hidden sm:block w-3 h-3 shrink-0" />
+                      <span className="hidden sm:inline">WHATSAPP</span>
+                      <span className="sm:hidden">WA</span>
                     </button>
                   </div>
                   <button 
@@ -375,7 +377,7 @@ export default function SRKBoltHomepage() {
                       setIsRFQPopupOpen(true)
                       addToRFQ(product.name, product.image)
                     }}
-                    className="w-full bg-[#A02222] hover:bg-[#2E1F44] text-white text-xs font-semibold py-2 rounded-md transition-colors duration-200"
+                    className="w-full bg-[#A02222] hover:bg-[#2E1F44] text-white text-[9px] sm:text-[10px] md:text-xs font-semibold py-1.5 sm:py-2 rounded-md transition-colors duration-200"
                   >
                     ADD TO RFQ
                   </button>

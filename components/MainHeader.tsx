@@ -248,7 +248,7 @@ export default function MainHeader() {
           </div>
                 
           {/* Contact Info */}
-          <div className="flex flex-wrap items-center gap-3 text-sm font-semibold">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm font-semibold w-full md:w-auto">
             <div className="flex items-center">
               <span className="bg-[#A02222] hover:bg-[#2E1F44] transition-colors px-3 py-2 rounded-lg flex items-center gap-2 text-white">
                 <Phone className="w-4 h-4" />
