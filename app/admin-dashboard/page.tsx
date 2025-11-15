@@ -39,6 +39,7 @@ import {
   Inbox,
   LinkIcon,
   ArrowRight,
+  Phone,
 } from "lucide-react"
 
 interface Product {
@@ -134,6 +135,29 @@ interface ApplicationRecord {
   createdAt?: string
 }
 
+interface Contact {
+  _id?: string
+  title: string
+  name: string
+  designation: string
+  tel: string
+  email: string
+  type: "sales" | "purchase"
+  image?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+const emptyContactForm = {
+  title: "",
+  name: "",
+  designation: "",
+  tel: "",
+  email: "",
+  type: "sales" as "sales" | "purchase",
+  image: "",
+}
+
 const MAX_BANNER_COUNT = 3
 
 type BannerSlideForm = {
@@ -193,6 +217,12 @@ export default function AdminDashboard() {
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null)
   const [bannerForm, setBannerForm] = useState<BannerForm>(createEmptyBannerForm())
   const [uploadingBannerImages, setUploadingBannerImages] = useState<Record<number, boolean>>({})
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [loadingContacts, setLoadingContacts] = useState(false)
+  const [submittingContact, setSubmittingContact] = useState(false)
+  const [editingContact, setEditingContact] = useState<Contact | null>(null)
+  const [contactForm, setContactForm] = useState(emptyContactForm)
+  const [uploadingContactImage, setUploadingContactImage] = useState(false)
   const [editFormData, setEditFormData] = useState({
     name: "",
     description: "",
@@ -303,6 +333,7 @@ export default function AdminDashboard() {
         fetchApplications()
         fetchOpenings()
         fetchBanners()
+        fetchContacts()
       } else {
         // Session expired
         localStorage.removeItem("adminLoggedIn")
@@ -589,6 +620,187 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete opening",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const fetchContacts = async () => {
+    try {
+      setLoadingContacts(true)
+      const response = await fetch("/api/contacts")
+      if (!response.ok) {
+        throw new Error("Failed to fetch contacts")
+      }
+      const data = await response.json()
+      const normalised = (Array.isArray(data) ? data : []).map((contact: any) => ({
+        ...contact,
+        _id: typeof contact._id === "string" ? contact._id : contact._id?.$oid ?? "",
+      }))
+      setContacts(normalised)
+    } catch (error) {
+      console.error("Error fetching contacts:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch contacts",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingContacts(false)
+    }
+  }
+
+  const handleContactInputChange = (field: keyof typeof emptyContactForm, value: string) => {
+    setContactForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleContactImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploadingContactImage(true)
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image")
+      }
+
+      const data = await response.json()
+      setContactForm((prev) => ({ ...prev, image: data.imageUrl }))
+      toast({
+        title: "Image uploaded",
+        description: "Contact image uploaded successfully.",
+        variant: "success",
+      })
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      })
+    } finally {
+      setUploadingContactImage(false)
+    }
+  }
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const payload = {
+      title: contactForm.title.trim(),
+      name: contactForm.name.trim(),
+      designation: contactForm.designation.trim(),
+      tel: contactForm.tel.trim(),
+      email: contactForm.email.trim(),
+      type: contactForm.type,
+      image: contactForm.image.trim(),
+    }
+
+    if (!payload.title || !payload.name || !payload.designation || !payload.tel || !payload.email) {
+      toast({
+        title: "Missing fields",
+        description: "All fields are required.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setSubmittingContact(true)
+
+      const endpoint = editingContact ? `/api/contacts/${editingContact._id}` : "/api/contacts"
+      const method = editingContact ? "PUT" : "POST"
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to save contact")
+      }
+
+      toast({
+        title: editingContact ? "Contact updated" : "Contact added",
+        description: editingContact
+          ? "The contact has been updated successfully."
+          : "The contact has been added successfully.",
+        variant: "success",
+      })
+
+      setContactForm(emptyContactForm)
+      setEditingContact(null)
+      fetchContacts()
+    } catch (error) {
+      console.error("Error saving contact:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save contact",
+        variant: "destructive",
+      })
+    } finally {
+      setSubmittingContact(false)
+    }
+  }
+
+  const handleEditContact = (contact: Contact) => {
+    setEditingContact(contact)
+    setContactForm({
+      title: contact.title || "",
+      name: contact.name || "",
+      designation: contact.designation || "",
+      tel: contact.tel || "",
+      email: contact.email || "",
+      type: contact.type || "sales",
+      image: contact.image || "",
+    })
+    setActiveTab("contacts")
+  }
+
+  const cancelContactEdit = () => {
+    setEditingContact(null)
+    setContactForm(emptyContactForm)
+  }
+
+  const handleDeleteContact = async (contactId?: string) => {
+    if (!contactId) return
+    const confirmed = confirm("Are you sure you want to delete this contact?")
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/contacts/${contactId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete contact")
+      }
+
+      toast({
+        title: "Contact removed",
+        description: "The contact has been removed.",
+        variant: "success",
+      })
+
+      fetchContacts()
+    } catch (error) {
+      console.error("Error deleting contact:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete contact",
         variant: "destructive",
       })
     }
@@ -1693,7 +1905,7 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="add-product" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Product
@@ -1725,6 +1937,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="blogs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Blogs
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Contact Us
             </TabsTrigger>
           </TabsList>
 
@@ -3453,6 +3669,256 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Contact Management Tab */}
+          <TabsContent value="contacts">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="bg-white shadow-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {editingContact ? (
+                      <>
+                        <Edit className="h-5 w-5" />
+                        Edit Contact: {editingContact.name}
+                      </>
+                    ) : (
+                      <>
+                        <Phone className="h-5 w-5" />
+                        Add Contact
+                      </>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleContactSubmit} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-title">Title</Label>
+                      <Input
+                        id="contact-title"
+                        value={contactForm.title}
+                        onChange={(e) => handleContactInputChange("title", e.target.value)}
+                        placeholder="e.g., Mr., Mrs., Ms."
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-name">Name</Label>
+                      <Input
+                        id="contact-name"
+                        value={contactForm.name}
+                        onChange={(e) => handleContactInputChange("name", e.target.value)}
+                        placeholder="e.g., John Doe"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-designation">Designation</Label>
+                      <Input
+                        id="contact-designation"
+                        value={contactForm.designation}
+                        onChange={(e) => handleContactInputChange("designation", e.target.value)}
+                        placeholder="e.g., Founder & Managing Director"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="contact-tel">Telephone</Label>
+                        <Input
+                          id="contact-tel"
+                          value={contactForm.tel}
+                          onChange={(e) => handleContactInputChange("tel", e.target.value)}
+                          placeholder="e.g., +971 58 871 3064"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="contact-email">Email</Label>
+                        <Input
+                          id="contact-email"
+                          type="email"
+                          value={contactForm.email}
+                          onChange={(e) => handleContactInputChange("email", e.target.value)}
+                          placeholder="e.g., sales@srkbolt.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-type">Type</Label>
+                      <Select
+                        value={contactForm.type}
+                        onValueChange={(value) => handleContactInputChange("type", value)}
+                      >
+                        <SelectTrigger id="contact-type">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sales">Sales</SelectItem>
+                          <SelectItem value="purchase">Purchase</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="contact-image">Image URL</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="contact-image"
+                          value={contactForm.image}
+                          onChange={(e) => handleContactInputChange("image", e.target.value)}
+                          placeholder="Enter image URL or upload"
+                        />
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleContactImageUpload}
+                            className="hidden"
+                            disabled={uploadingContactImage}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingContactImage}
+                            className="whitespace-nowrap"
+                          >
+                            {uploadingContactImage ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload
+                              </>
+                            )}
+                          </Button>
+                        </label>
+                      </div>
+                      {contactForm.image && (
+                        <div className="mt-3">
+                          <img
+                            src={contactForm.image}
+                            alt="Contact preview"
+                            className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {editingContact && (
+                      <Button type="button" variant="outline" className="w-full" onClick={cancelContactEdit}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel Editing
+                      </Button>
+                    )}
+
+                    <Button type="submit" disabled={submittingContact} className="w-full">
+                      {submittingContact ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          {editingContact ? "Update Contact" : "Add Contact"}
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white shadow-md">
+                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Contact List
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">Manage contacts for the Contact Us page.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={fetchContacts} disabled={loadingContacts}>
+                    <Loader2 className={`h-4 w-4 mr-2 ${loadingContacts ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {loadingContacts ? (
+                    <div className="flex items-center justify-center py-10 text-gray-500">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      Loading contacts...
+                    </div>
+                  ) : contacts.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500 border border-dashed border-gray-200 rounded-xl">
+                      No contacts added yet. Add your first contact using the form on the left.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {contacts.map((contact) => (
+                        <div key={contact._id} className="border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex gap-4 flex-1">
+                              {contact.image && (
+                                <img
+                                  src={contact.image}
+                                  alt={contact.name}
+                                  className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.style.display = 'none'
+                                  }}
+                                />
+                              )}
+                              <div className="space-y-1 flex-1">
+                                <h3 className="text-lg font-semibold text-[#2E1F44]">
+                                  {contact.title} {contact.name}
+                                </h3>
+                                <p className="text-sm text-blue-600 font-semibold">{contact.designation}</p>
+                                <div className="flex flex-wrap gap-4 text-xs text-[#2E1F44]/70 mt-2">
+                                  <span>{contact.tel}</span>
+                                  <a
+                                    href={`mailto:${contact.email}`}
+                                    className="text-[#A02222] hover:underline"
+                                  >
+                                    {contact.email}
+                                  </a>
+                                </div>
+                                <Badge variant="outline" className="text-xs mt-2">
+                                  {contact.type === "sales" ? "Sales" : "Purchase"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex flex-row lg:flex-col gap-2 shrink-0">
+                              <Button variant="outline" size="sm" onClick={() => handleEditContact(contact)}>
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteContact(contact._id)}>
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

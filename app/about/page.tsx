@@ -18,7 +18,7 @@ const FALLBACK_SLIDES: BannerSlide[] = [
   {
     id: 1,
     title: "About SRK Bolt",
-    subtitle: "Leading Fastener Solutions Since 1998",
+    subtitle: "Leading Fastener Solutions Since 2015",
     image: "https://mikehardware.com/wp-content/uploads/2023/09/bolt-1-y.jpg",
   },
   {
@@ -182,7 +182,7 @@ export default function AboutPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-              {[{ label: "Years Industry Experience", value: "25+", tone: "primary" }, { label: "SKU's In Stock", value: "5k", tone: "secondary" }, { label: "Sq.ft Warehouse", value: "50k", tone: "secondary" }, { label: "Happy Customers", value: "500+", tone: "primary" }].map(
+              {[{ label: "Years Industry Experience", value: "10+", tone: "primary" }, { label: "SKU's In Stock", value: "5k", tone: "secondary" }, { label: "Sq.ft Warehouse", value: "50k", tone: "secondary" }, { label: "Happy Customers", value: "500+", tone: "primary" }].map(
                 (card, index) => (
                   <div
                     key={index}
@@ -270,8 +270,8 @@ export default function AboutPage() {
               </p>
             </div>
             <img
-              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80"
-              alt="SRK Bolt Manufacturing"
+              src="/WhatsApp Image 2025-11-15 at 12.36.27 PM.jpeg"
+              alt="SRK Bolt Manufacturing Excellence"
               className="w-full h-96 object-cover rounded-2xl shadow-[0_12px_24px_rgba(32,23,60,0.15)]"
             />
           </div>
@@ -311,22 +311,67 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="flex justify-center">
-            <div className="max-w-sm w-full">
-              <div className="bg-white rounded-2xl shadow-[0_12px_30px_rgba(46,31,68,0.12)] overflow-hidden border border-[#E4E1F0] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(46,31,68,0.18)] hover:-translate-y-1">
-                <div className="relative h-80 overflow-hidden bg-[#F7F7FA]">
+          <div className="flex flex-col gap-8 max-w-5xl mx-auto">
+            {/* Mr. Kalyan Singh - Founder */}
+            <div className="bg-white rounded-2xl shadow-[0_12px_30px_rgba(46,31,68,0.12)] overflow-hidden border border-[#E4E1F0] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(46,31,68,0.18)]">
+              <div className="grid md:grid-cols-[auto_1fr] gap-4 p-6">
+                {/* Image on Left */}
+                <div className="max-w-md shrink-0">
                   <img
-                    src="/picturee.jpeg"
+                    src="/WhatsApp Image 2025-11-14 at 6.15.47 PM.jpeg"
                     alt="Founder"
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto object-contain rounded-lg"
                   />
                 </div>
-                <div className="p-6 text-center">
-                  <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Founder</h3>
-                  <p className="text-[#A02222] font-semibold mb-4">Founder</p>
-                  <p className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed">
-                    Leading SRK Bolt with vision and dedication, driving innovation and excellence in the fastener industry.
-                  </p>
+                {/* Text on Right */}
+                <div className="flex flex-col justify-center min-w-0">
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Mr. Kalyan Singh</h3>
+                    <p className="text-[#A02222] font-semibold">Founder & Managing Director, SRK Bolts</p>
+                  </div>
+                  <div className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed space-y-4">
+                    <p>
+                      At SRK Bolts, our mission has always been clear — to deliver reliable, high-performance fastening solutions that meet the highest standards of quality and precision. From humble beginnings, we have grown into a trusted name through our commitment to innovation, consistency, and customer satisfaction.
+                    </p>
+                    <p>
+                      Success in any organization is built on strong values and a dedicated team. I take great pride in the professionalism, integrity, and hard work of everyone at SRK Bolts. Their efforts continue to strengthen our reputation and help us achieve new milestones every year.
+                    </p>
+                    <p>
+                      As we move forward, our focus remains on continuous improvement, adopting advanced technologies, and expanding our global reach. Together, we will continue to build a company that not only meets the expectations of our clients but also sets new benchmarks in the industry.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mr. Vikram Singh - Head of Business Development */}
+            <div className="bg-white rounded-2xl shadow-[0_12px_30px_rgba(46,31,68,0.12)] overflow-hidden border border-[#E4E1F0] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(46,31,68,0.18)]">
+              <div className="grid md:grid-cols-[auto_1fr] gap-4 p-6">
+                {/* Image on Left */}
+                <div className="max-w-md shrink-0">
+                  <img
+                    src="/WhatsApp Image 2025-11-14 at 6.15.20 PM.jpeg"
+                    alt="Head of Business Development"
+                    className="w-full h-auto object-contain rounded-lg"
+                  />
+                </div>
+                {/* Text on Right */}
+                <div className="flex flex-col justify-center min-w-0">
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Mr. Vikram Singh</h3>
+                    <p className="text-[#A02222] font-semibold">Head of Business Development, SRK Bolts</p>
+                  </div>
+                  <div className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed space-y-4">
+                    <p>
+                      At SRK Bolts, our mission has always been clear — to deliver reliable, high-performance fastening solutions that meet the highest standards of quality and precision. From humble beginnings, we have grown into a trusted name through our commitment to innovation, consistency, and customer satisfaction.
+                    </p>
+                    <p>
+                      Success in any organization is built on strong values and a dedicated team. I take great pride in the professionalism, integrity, and hard work of everyone at SRK Bolts. Their efforts continue to strengthen our reputation and help us achieve new milestones every year.
+                    </p>
+                    <p>
+                      As we move forward, our focus remains on continuous improvement, adopting advanced technologies, and expanding our global reach. Together, we will continue to build a company that not only meets the expectations of our clients but also sets new benchmarks in the industry.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

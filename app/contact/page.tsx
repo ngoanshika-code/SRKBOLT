@@ -1,6 +1,47 @@
+"use client"
+
 import Layout from "@/components/Layout"
+import { useState, useEffect } from "react"
+
+interface Contact {
+  _id?: string
+  title: string
+  name: string
+  designation: string
+  tel: string
+  email: string
+  type: "sales" | "purchase"
+  image?: string
+}
 
 export default function ContactPage() {
+  const [activeTab, setActiveTab] = useState<"sales" | "purchase">("sales")
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/contacts?type=${activeTab}`)
+        if (response.ok) {
+          const data = await response.json()
+          const normalised = (Array.isArray(data) ? data : []).map((contact: any) => ({
+            ...contact,
+            _id: typeof contact._id === "string" ? contact._id : contact._id?.$oid ?? "",
+          }))
+          setContacts(normalised)
+        }
+      } catch (error) {
+        console.error("Error fetching contacts:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchContacts()
+  }, [activeTab])
+
   return (
     <Layout>
       <section className="bg-[#F7F7FA] py-16">
@@ -18,9 +59,97 @@ export default function ContactPage() {
             >
               Download Catalogue
             </a>
+            
+            {/* Tabs in Center */}
+            <div className="flex justify-center mt-6">
+              <div className="flex bg-[#F5F5F5] rounded-full p-1">
+                <button
+                  onClick={() => setActiveTab("sales")}
+                  className={`px-8 py-3 font-semibold transition-all duration-300 rounded-full ${
+                    activeTab === "sales"
+                      ? "bg-[#2E1F44] text-white shadow-sm"
+                      : "bg-white text-[#2E1F44] border border-[#2E1F44]"
+                  }`}
+                >
+                  Sales
+                </button>
+                <button
+                  onClick={() => setActiveTab("purchase")}
+                  className={`px-8 py-3 font-semibold transition-all duration-300 rounded-full ${
+                    activeTab === "purchase"
+                      ? "bg-[#2E1F44] text-white shadow-sm"
+                      : "bg-white text-[#2E1F44] border border-[#2E1F44]"
+                  }`}
+                >
+                  Purchase
+                </button>
+              </div>
+            </div>
           </div>
           
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          {/* Sales/Purchase Contact Cards */}
+          {(activeTab === "sales" || activeTab === "purchase") && (
+            <div className="max-w-4xl mx-auto mt-8">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A02222] mx-auto mb-2"></div>
+                    Loading contacts...
+                  </div>
+                </div>
+              ) : contacts.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  No contacts available for {activeTab === "sales" ? "Sales" : "Purchase"}.
+                </div>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-4">
+                  {contacts.map((contact) => (
+                    <div key={contact._id} className="bg-[#F7F7FA] rounded-xl overflow-hidden shadow-sm max-w-md">
+                      <div className="flex flex-col">
+                        {/* Image Section - Top Half */}
+                        <div className="w-full h-56 bg-gray-200 overflow-hidden flex items-center justify-center rounded-t-xl">
+                          {contact.image ? (
+                            <img
+                              src={contact.image}
+                              alt={`${contact.title} ${contact.name}`}
+                              className="w-full h-full object-contain rounded-t-xl"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
+                          ) : (
+                            <div className="text-gray-400 text-sm">No image</div>
+                          )}
+                        </div>
+                        {/* Text Section - Bottom Half */}
+                        <div className="p-4 text-center">
+                          <h3 className="text-base font-bold text-[#2E1F44] mb-1.5">
+                            {contact.title} {contact.name}
+                          </h3>
+                          <p className="text-blue-600 font-semibold mb-3 text-xs">{contact.designation}</p>
+                          <div className="space-y-1.5 text-xs text-[#2E1F44]">
+                            <div>
+                              <a href={`tel:${contact.tel.replace(/\s/g, '')}`} className="underline hover:text-[#A02222]">
+                                Tel. {contact.tel}
+                              </a>
+                            </div>
+                            <div>
+                              <a href={`mailto:${contact.email}`} className="underline hover:text-[#A02222]">
+                                {contact.email}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="max-w-4xl mx-auto mt-12">
             <div className="bg-white rounded-2xl shadow-[0_12px_24px_rgba(46,31,68,0.08)] p-10 space-y-8">
               <div className="space-y-3">
                 <h2 className="text-2xl font-semibold text-[#2E1F44]">Contact Information</h2>
@@ -66,62 +195,6 @@ export default function ContactPage() {
                   </div>
                 ))}
               </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl shadow-[0_12px_24px_rgba(46,31,68,0.08)] p-10">
-              <h2 className="text-2xl font-semibold text-[#2E1F44] mb-6">Send Us a Message</h2>
-              <form className="space-y-5">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-semibold text-[#2E1F44] mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A02222] placeholder:text-[#777]"
-                    placeholder="Jane Doe"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-[#2E1F44] mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A02222] placeholder:text-[#777]"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-[#2E1F44] mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A02222] placeholder:text-[#777]"
-                    placeholder="+971 58 871 3064"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-[#2E1F44] mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A02222] placeholder:text-[#777]"
-                    placeholder="Let us know about your requirements"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-[#A02222] hover:bg-[#2E1F44] text-white py-3 rounded-lg font-semibold transition-colors duration-300"
-                >
-                  Submit Inquiry
-                </button>
-              </form>
             </div>
           </div>
         </div>
