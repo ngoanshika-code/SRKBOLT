@@ -187,7 +187,7 @@ export default function AboutPage() {
                   <div
                     key={index}
                     className={`p-8 rounded-[10px] text-white text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] ${
-                      card.tone === "primary" ? "bg-[#A02222]" : "bg-[#2E1F44]"
+                      card.tone === "primary" ? "bg-[#A02222]" : "bg-[#1F1F1F]"
                     }`}
                   >
                     <div className="text-4xl font-bold mb-2">{card.value}</div>
@@ -328,38 +328,6 @@ export default function AboutPage() {
                   <div className="mb-4">
                     <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Mr. Kalyan Singh</h3>
                     <p className="text-[#A02222] font-semibold">Founder & Managing Director, SRK Bolts</p>
-                  </div>
-                  <div className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed space-y-4">
-                    <p>
-                      At SRK Bolts, our mission has always been clear — to deliver reliable, high-performance fastening solutions that meet the highest standards of quality and precision. From humble beginnings, we have grown into a trusted name through our commitment to innovation, consistency, and customer satisfaction.
-                    </p>
-                    <p>
-                      Success in any organization is built on strong values and a dedicated team. I take great pride in the professionalism, integrity, and hard work of everyone at SRK Bolts. Their efforts continue to strengthen our reputation and help us achieve new milestones every year.
-                    </p>
-                    <p>
-                      As we move forward, our focus remains on continuous improvement, adopting advanced technologies, and expanding our global reach. Together, we will continue to build a company that not only meets the expectations of our clients but also sets new benchmarks in the industry.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Mr. Vikram Singh - Head of Business Development */}
-            <div className="bg-white rounded-2xl shadow-[0_12px_30px_rgba(46,31,68,0.12)] overflow-hidden border border-[#E4E1F0] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(46,31,68,0.18)]">
-              <div className="grid md:grid-cols-[auto_1fr] gap-4 p-6">
-                {/* Image on Left */}
-                <div className="max-w-md shrink-0">
-                  <img
-                    src="/WhatsApp Image 2025-11-14 at 6.15.20 PM.jpeg"
-                    alt="Head of Business Development"
-                    className="w-full h-auto object-contain rounded-lg"
-                  />
-                </div>
-                {/* Text on Right */}
-                <div className="flex flex-col justify-center min-w-0">
-                  <div className="mb-4">
-                    <h3 className="text-2xl font-bold text-[#2E1F44] mb-2">Mr. Vikram Singh</h3>
-                    <p className="text-[#A02222] font-semibold">Head of Business Development, SRK Bolts</p>
                   </div>
                   <div className="text-[rgba(46,31,68,0.75)] text-sm leading-relaxed space-y-4">
                     <p>

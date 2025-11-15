@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadImageToCloudinary } from '@/lib/cloudinary'
+import { uploadImageToCloudinary, CloudinaryAccount } from '@/lib/cloudinary'
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const accountParam = formData.get('account') as string
+    const account: CloudinaryAccount = (accountParam === 'secondary' ? 'secondary' : 'primary')
+    const folder = formData.get('folder') as string | null
     
     if (!file) {
       return NextResponse.json(
         { error: 'No file provided' },
+        { status: 400 }
+      )
+    }
+
+    // Validate account parameter if provided
+    if (accountParam && accountParam !== 'primary' && accountParam !== 'secondary') {
+      return NextResponse.json(
+        { error: 'Invalid account parameter. Must be "primary" or "secondary".' },
         { status: 400 }
       )
     }
@@ -38,7 +49,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const imageUrl = await uploadImageToCloudinary(file)
+    const imageUrl = await uploadImageToCloudinary(file, account, folder || undefined)
     
     return NextResponse.json(
       { 
