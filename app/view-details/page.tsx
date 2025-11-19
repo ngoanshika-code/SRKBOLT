@@ -496,21 +496,21 @@ export default function ProductDetailsPage() {
                   rawProductData.technicalInformation.trim() !== ""
                 return (
                   <TabsList className={`grid w-full mb-8 rounded-xl bg-[#F0ECFA] p-1 ${hasTechnicalInfo ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                    <TabsTrigger value="description" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
-                      Description
-                    </TabsTrigger>
-                    <TabsTrigger value="uses" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
-                      Uses & Applications
-                    </TabsTrigger>
+                <TabsTrigger value="description" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
+                  Description
+                </TabsTrigger>
+                <TabsTrigger value="uses" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
+                  Uses & Applications
+                </TabsTrigger>
                     {hasTechnicalInfo && (
                       <TabsTrigger value="technical" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
                         Technical Information
                       </TabsTrigger>
                     )}
-                    <TabsTrigger value="shipping" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
-                      Shipping & Returns
-                    </TabsTrigger>
-                  </TabsList>
+                <TabsTrigger value="shipping" className="data-[state=active]:bg-white data-[state=active]:text-[#A02222] data-[state=active]:shadow-[0_8px_20px_rgba(160,34,34,0.15)] text-[#2E1F44]/70 font-semibold rounded-lg transition-all">
+                  Shipping & Returns
+                </TabsTrigger>
+              </TabsList>
                 )
               })()}
 

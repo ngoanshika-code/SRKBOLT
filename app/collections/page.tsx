@@ -431,7 +431,7 @@ export default function CollectionsPage() {
                   </div>
               </Card>
                 </Link>
-              ))}
+            ))}
           </div>
           )}
         </div>
