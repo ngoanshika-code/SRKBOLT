@@ -27,13 +27,11 @@ import {
 } from "lucide-react"
 import { findProductByName, findProductById, getCategoryRoute, type HusainiProduct } from "@/data/husaini-products"
 import { useRFQ } from "@/contexts/RFQContext"
-import { slugToSearchPattern } from "@/lib/slug"
+import { createSlug } from "@/lib/slug"
 
 export default function ProductDetailsPage() {
   const params = useParams()
   const productSlug = params?.name as string
-  // Convert slug back to searchable pattern
-  const productNameSearch = productSlug ? slugToSearchPattern(decodeURIComponent(productSlug)) : null
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -106,7 +104,7 @@ export default function ProductDetailsPage() {
   }
 
   useEffect(() => {
-    if (!productNameSearch) {
+    if (!productSlug) {
       setProduct(null)
       setProductError('Product name is required.')
       setLoadingProduct(false)
@@ -119,25 +117,31 @@ export default function ProductDetailsPage() {
       setLoadingProduct(true)
       setProductError(null)
 
+      // Normalize the URL slug for comparison
+      const urlSlug = productSlug.toLowerCase().trim()
+
       try {
-        // Try to fetch by name from database - search using the pattern
-        const response = await fetch(`/api/products?search=${encodeURIComponent(productNameSearch)}`)
+        // Fetch all products and match by slug
+        // We'll search broadly and then match by slug comparison
+        const response = await fetch(`/api/products`)
         if (response.ok) {
           const data = await response.json()
           if (!cancelled && Array.isArray(data) && data.length > 0) {
-            // Find the best match by comparing slugs
+            // Find the exact match by comparing slugs
             // Create slug from each product name and compare with the URL slug
-            const urlSlug = productSlug.toLowerCase().replace(/[^a-z0-9]/g, '')
             let matchedProduct = data.find((p: any) => {
-              const pSlug = p.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+              if (!p.name) return false
+              const pSlug = createSlug(p.name)
               return pSlug === urlSlug
-            }) || data[0]
+            })
             
-            setRawProductData(matchedProduct) // Store raw data for technicalInformation
-            setProduct(mapDbProductToHusaini(matchedProduct))
-            setProductError(null)
-            setLoadingProduct(false)
-            return
+            if (matchedProduct) {
+              setRawProductData(matchedProduct) // Store raw data for technicalInformation
+              setProduct(mapDbProductToHusaini(matchedProduct))
+              setProductError(null)
+              setLoadingProduct(false)
+              return
+            }
           }
         }
       } catch (error) {
@@ -149,12 +153,15 @@ export default function ProductDetailsPage() {
 
       if (cancelled) return
 
-      // Fallback to catalogue data - try to find by matching the search pattern
-      let fallback: HusainiProduct | undefined = findProductByName(productNameSearch)
-
-      if (!fallback) {
-        fallback = findProductByName("DIN 933 / 931 Hexagon Bolt", "BOLTS") || undefined
-      }
+      // Fallback to catalogue data - match by slug
+      let fallback: HusainiProduct | undefined
+      
+      // Import husainiProducts to search through them
+      const { husainiProducts } = await import("@/data/husaini-products")
+      fallback = husainiProducts.find((p: HusainiProduct) => {
+        const pSlug = createSlug(p.name)
+        return pSlug === urlSlug
+      })
 
       if (!cancelled) {
         if (!fallback) {
@@ -173,7 +180,7 @@ export default function ProductDetailsPage() {
     return () => {
       cancelled = true
     }
-  }, [productNameSearch])
+  }, [productSlug])
 
   if (loadingProduct) {
     return (
